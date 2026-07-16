@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Wishly — Premium Wishlist</title>
+<meta name="description" content="A beautiful premium wishlist app with budgets, priorities, and cloud sync." />
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'system-ui', 'sans-serif'],
+          display: ['Space Grotesk', 'Inter', 'sans-serif'],
+        },
+      }
+    }
+  }
+</script>
+<style>
+  :root {
+    --bg: #f7f7fb;
+    --fg: #0a0a0f;
+    --muted: #6b7280;
+    --card: rgba(255,255,255,0.65);
+    --border: rgba(15,15,25,0.08);
+    --shadow: 0 10px 30px -12px rgba(15,15,35,0.15);
+    --accent: #6366f1;
+    --accent-2: #ec4899;
+    --accent-3: #06b6d4;
+  }
+  .dark {
+    --bg: #07070c;
+    --fg: #f5f5f7;
+    --muted: #9ca3af;
+    --card: rgba(20,20,28,0.55);
+    --border: rgba(255,255,255,0.08);
+    --shadow: 0 10px 40px -12px rgba(0,0,0,0.6);
+  }
+  html, body { background: var(--bg); color: var(--fg); }
+  body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+
+  /* Animated gradient background */
+  .bg-aurora {
+    position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
+  }
+  .bg-aurora::before, .bg-aurora::after {
+    content: ''; position: absolute; width: 60vmax; height: 60vmax; border-radius: 50%;
+    filter: blur(80px); opacity: .5; animation: float 22s ease-in-out infinite;
+  }
+  .bg-aurora::before {
+    background: radial-gradient(circle at 30% 30%, #6366f1, transparent 60%);
+    top: -20vmax; left: -10vmax;
+  }
+  .bg-aurora::after {
+    background: radial-gradient(circle at 70% 70%, #ec4899, transparent 60%);
+    bottom: -25vmax; right: -15vmax; animation-delay: -8s;
+  }
+  .bg-aurora .blob3 {
+    position: absolute; width: 45vmax; height: 45vmax; border-radius: 50%;
+    background: radial-gradient(circle, #06b6d4, transparent 60%);
+    filter: blur(90px); opacity: .35; top: 30%; left: 40%;
+    animation: float 30s ease-in-out infinite reverse;
+  }
+  @keyframes float {
+    0%,100% { transform: translate(0,0) scale(1); }
+    33% { transform: translate(8vmax,-6vmax) scale(1.1); }
+    66% { transform: translate(-6vmax,8vmax) scale(0.95); }
+  }
+
+  .glass {
+    background: var(--card);
+    backdrop-filter: blur(20px) saturate(150%);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+  .card-hover { transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+  .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 50px -18px rgba(99,102,241,.35); border-color: rgba(99,102,241,.4); }
+
+  .gradient-text {
+    background: linear-gradient(120deg, #6366f1, #ec4899, #06b6d4);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white; transition: transform .15s ease, box-shadow .2s ease, filter .2s;
+    box-shadow: 0 8px 20px -8px rgba(99,102,241,.6);
+  }
+  .btn-primary:hover { transform: translateY(-1px); filter: brightness(1.08); }
+  .btn-primary:active { transform: translateY(0) scale(.98); }
+
+  .ripple { position: relative; overflow: hidden; }
+  .ripple .r {
+    position: absolute; border-radius: 50%; transform: scale(0);
+    background: rgba(255,255,255,.5); animation: ripple .6s ease-out; pointer-events: none;
+  }
+  @keyframes ripple { to { transform: scale(4); opacity: 0; } }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #6366f1, #ec4899); border-radius: 10px; border: 2px solid transparent; background-clip: padding-box; }
+  ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #4f46e5, #db2777); background-clip: padding-box; border: 2px solid transparent; }
+
+  /* Skeleton */
+  .skeleton {
+    background: linear-gradient(90deg, rgba(120,120,140,.1), rgba(120,120,140,.25), rgba(120,120,140,.1));
+    background-size: 200% 100%; animation: shimmer 1.4s infinite;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  /* Toast */
+  .toast-enter { animation: toastIn .35s cubic-bezier(.2,.9,.3,1.2) both; }
+  .toast-exit { animation: toastOut .3s ease forwards; }
+  @keyframes toastIn { from { transform: translateY(20px) scale(.9); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+  @keyframes toastOut { to { transform: translateY(20px) scale(.9); opacity: 0; } }
+
+  /* Modal */
+  .modal-backdrop { animation: fade .2s ease both; }
+  .modal-panel { animation: pop .25s cubic-bezier(.2,.9,.3,1.2) both; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes pop { from { transform: scale(.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  /* Priority badges */
+  .pri-High { background: linear-gradient(135deg,#ef4444,#f97316); color: white; }
+  .pri-Medium { background: linear-gradient(135deg,#f59e0b,#fbbf24); color: #1a1a1a; }
+  .pri-Low { background: linear-gradient(135deg,#10b981,#22d3ee); color: white; }
+
+  .fab {
+    position: fixed; bottom: 24px; right: 24px; z-index: 40;
+    width: 60px; height: 60px; border-radius: 50%;
+    background: linear-gradient(135deg,#6366f1,#ec4899);
+    color: white; font-size: 24px;
+    box-shadow: 0 15px 35px -8px rgba(99,102,241,.6);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .2s ease;
+  }
+  .fab:hover { transform: scale(1.08) rotate(90deg); }
+
+  input, select, textarea {
+    background: rgba(255,255,255,.6);
+    border: 1px solid var(--border);
+    color: var(--fg);
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .dark input, .dark select, .dark textarea { background: rgba(255,255,255,.04); }
+  input:focus, select:focus, textarea:focus {
+    outline: none; border-color: #6366f1;
+    box-shadow: 0 0 0 4px rgba(99,102,241,.15);
+  }
+
+  .search-bar {
+    background: var(--card); backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    transition: border-color .2s, box-shadow .2s, transform .15s;
+  }
+  .search-bar:focus-within { border-color: #6366f1; box-shadow: 0 0 0 5px rgba(99,102,241,.15); }
+
+  .img-wrap { background: linear-gradient(135deg, rgba(99,102,241,.1), rgba(236,72,153,.1)); }
+  .fade-in { animation: fadeIn .4s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .counter { font-variant-numeric: tabular-nums; }
+
+  /* Confetti */
+  .confetti { position: fixed; width: 10px; height: 14px; top: -20px; z-index: 100; pointer-events: none; will-change: transform; }
+  @keyframes confettiFall { to { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+
+  details > summary { list-style: none; cursor: pointer; }
+  details > summary::-webkit-details-marker { display: none; }
+</style>
+</head>
+<body>
+
+<div class="bg-aurora"><div class="blob3"></div></div>
+
+<!-- Header -->
+<header class="sticky top-0 z-30 glass border-b border-white/10">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg" style="background:linear-gradient(135deg,#6366f1,#ec4899)">
+        <i class="fa-solid fa-star"></i>
+      </div>
+      <div>
+        <h1 class="font-display font-bold text-xl leading-tight">Wishly</h1>
+        <p class="text-xs opacity-60 -mt-0.5">Your dream board</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <div class="hidden md:flex items-center gap-1 text-xs px-3 py-1.5 rounded-full glass" title="Storage mode">
+        <span id="storage-dot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span id="storage-label">Local</span>
+      </div>
+      <button id="theme-btn" class="ripple w-10 h-10 rounded-xl glass flex items-center justify-center hover:scale-105 transition" title="Toggle theme (T)">
+        <i id="theme-icon" class="fa-solid fa-moon"></i>
+      </button>
+      <details class="relative">
+        <summary class="ripple w-10 h-10 rounded-xl glass flex items-center justify-center hover:scale-105 transition" title="Menu">
+          <i class="fa-solid fa-ellipsis-vertical"></i>
+        </summary>
+        <div class="absolute right-0 mt-2 w-56 glass rounded-xl p-2 z-40">
+          <button data-action="import" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 flex items-center gap-2"><i class="fa-solid fa-file-import w-5"></i> Import JSON</button>
+          <button data-action="export-json" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 flex items-center gap-2"><i class="fa-solid fa-file-export w-5"></i> Export JSON</button>
+          <button data-action="export-csv" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 flex items-center gap-2"><i class="fa-solid fa-file-csv w-5"></i> Export CSV</button>
+          <button data-action="firebase" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 flex items-center gap-2"><i class="fa-solid fa-cloud w-5"></i> Firebase Setup</button>
+          <button data-action="shortcuts" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 flex items-center gap-2"><i class="fa-solid fa-keyboard w-5"></i> Shortcuts</button>
+        </div>
+      </details>
+      <button id="add-btn" class="ripple btn-primary hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm">
+        <i class="fa-solid fa-plus"></i> Add Wish
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+
+  <!-- Hero + Dashboard -->
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="lg:col-span-3">
+      <h2 class="font-display text-3xl sm:text-5xl font-bold tracking-tight">Your <span class="gradient-text">wishlist</span>, beautifully organized.</h2>
+      <p class="opacity-70 mt-2 max-w-2xl">Track everything you want, set priorities, watch your budget, and never lose an idea again.</p>
+    </div>
+
+    <div class="glass rounded-2xl p-5 card-hover">
+      <div class="flex items-center justify-between">
+        <p class="text-sm opacity-60">Total Wishes</p>
+        <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:rgba(99,102,241,.15);color:#6366f1"><i class="fa-solid fa-list"></i></div>
+      </div>
+      <p id="stat-count" class="counter mt-2 text-4xl font-bold font-display">0</p>
+    </div>
+
+    <div class="glass rounded-2xl p-5 card-hover">
+      <div class="flex items-center justify-between">
+        <p class="text-sm opacity-60">Total Value</p>
+        <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:rgba(236,72,153,.15);color:#ec4899"><i class="fa-solid fa-sack-dollar"></i></div>
+      </div>
+      <p class="mt-2 text-4xl font-bold font-display"><span class="opacity-60 text-2xl align-top">$</span><span id="stat-value" class="counter">0</span></p>
+    </div>
+
+    <div class="glass rounded-2xl p-5 card-hover">
+      <div class="flex items-center justify-between">
+        <p class="text-sm opacity-60">Budget</p>
+        <div class="flex items-center gap-1">
+          <input id="budget-input" type="number" min="0" placeholder="0" class="w-24 px-2 py-1 rounded-lg text-sm text-right" />
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:rgba(6,182,212,.15);color:#06b6d4"><i class="fa-solid fa-chart-line"></i></div>
+        </div>
+      </div>
+      <div class="mt-3 h-3 rounded-full overflow-hidden" style="background:rgba(120,120,140,.15)">
+        <div id="budget-bar" class="h-full rounded-full transition-all duration-700" style="width:0%;background:linear-gradient(90deg,#10b981,#06b6d4)"></div>
+      </div>
+      <p id="budget-label" class="text-xs opacity-70 mt-2">Set a budget to track progress</p>
+    </div>
+  </section>
+
+  <!-- Toolbar -->
+  <section class="glass rounded-2xl p-3 sm:p-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+    <div class="search-bar flex items-center gap-2 px-4 py-2.5 rounded-xl flex-1">
+      <i class="fa-solid fa-magnifying-glass opacity-60"></i>
+      <input id="search" type="search" placeholder="Search wishes... (press /)" class="flex-1 bg-transparent border-0 focus:ring-0 focus:shadow-none focus:border-transparent p-0" style="box-shadow:none;border:0" />
+      <kbd class="hidden sm:inline text-xs opacity-50 px-1.5 py-0.5 rounded border border-current">/</kbd>
+    </div>
+    <select id="sort" class="px-4 py-2.5 rounded-xl text-sm">
+      <option value="newest">Newest first</option>
+      <option value="oldest">Oldest first</option>
+      <option value="price-desc">Price: high → low</option>
+      <option value="price-asc">Price: low → high</option>
+      <option value="priority">Priority</option>
+    </select>
+  </section>
+
+  <!-- Grid -->
+  <section id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></section>
+
+  <!-- Empty state -->
+  <section id="empty" class="hidden text-center py-20">
+    <div class="mx-auto w-24 h-24 rounded-3xl glass flex items-center justify-center mb-6 text-4xl gradient-text">
+      <i class="fa-regular fa-star"></i>
+    </div>
+    <h3 class="text-2xl font-display font-bold">Your wishlist is empty</h3>
+    <p class="opacity-70 mt-2">Add your first wish to get started.</p>
+    <button id="empty-add" class="ripple btn-primary mt-6 px-6 py-3 rounded-xl font-semibold inline-flex items-center gap-2">
+      <i class="fa-solid fa-plus"></i> Add your first wish
+    </button>
+  </section>
+</main>
+
+<!-- FAB -->
+<button id="fab" class="fab ripple sm:hidden" title="Add wish"><i class="fa-solid fa-plus"></i></button>
+
+<!-- Product modal -->
+<div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="modal-backdrop absolute inset-0 bg-black/50 backdrop-blur-sm" data-close></div>
+  <div class="modal-panel relative w-full max-w-lg glass rounded-2xl p-6 max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between mb-4">
+      <h3 id="modal-title" class="text-xl font-display font-bold">Add Wish</h3>
+      <button data-close class="w-9 h-9 rounded-lg hover:bg-white/10"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="product-form" class="space-y-3">
+      <input type="hidden" name="id" />
+      <div>
+        <label class="text-xs font-semibold opacity-70">Name *</label>
+        <input name="name" required maxlength="120" class="w-full mt-1 px-3 py-2.5 rounded-xl" placeholder="AirPods Pro" />
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs font-semibold opacity-70">Price</label>
+          <input name="price" type="number" min="0" step="0.01" class="w-full mt-1 px-3 py-2.5 rounded-xl" placeholder="0.00" />
+        </div>
+        <div>
+          <label class="text-xs font-semibold opacity-70">Priority</label>
+          <select name="priority" class="w-full mt-1 px-3 py-2.5 rounded-xl">
+            <option>Medium</option><option>High</option><option>Low</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="text-xs font-semibold opacity-70">Product link</label>
+        <input name="url" type="url" class="w-full mt-1 px-3 py-2.5 rounded-xl" placeholder="https://example.com/item" />
+      </div>
+      <div>
+        <label class="text-xs font-semibold opacity-70">Image URL</label>
+        <input name="image" type="url" class="w-full mt-1 px-3 py-2.5 rounded-xl" placeholder="https://.../image.jpg" />
+      </div>
+      <div>
+        <label class="text-xs font-semibold opacity-70">Notes</label>
+        <textarea name="notes" rows="3" class="w-full mt-1 px-3 py-2.5 rounded-xl resize-none" placeholder="Color, size, why you want it..."></textarea>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button type="button" data-close class="px-4 py-2.5 rounded-xl hover:bg-white/10 font-semibold text-sm">Cancel</button>
+        <button type="submit" class="ripple btn-primary px-5 py-2.5 rounded-xl font-semibold text-sm">Save Wish</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Confirm modal -->
+<div id="confirm" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="modal-backdrop absolute inset-0 bg-black/50 backdrop-blur-sm" data-close></div>
+  <div class="modal-panel relative w-full max-w-sm glass rounded-2xl p-6 text-center">
+    <div class="mx-auto w-14 h-14 rounded-full flex items-center justify-center mb-3" style="background:rgba(239,68,68,.15);color:#ef4444"><i class="fa-solid fa-trash text-xl"></i></div>
+    <h3 class="text-lg font-display font-bold">Delete this wish?</h3>
+    <p class="opacity-70 text-sm mt-1">This action cannot be undone.</p>
+    <div class="mt-5 flex gap-2">
+      <button data-close class="flex-1 px-4 py-2.5 rounded-xl hover:bg-white/10 font-semibold text-sm">Cancel</button>
+      <button id="confirm-yes" class="ripple flex-1 px-4 py-2.5 rounded-xl font-semibold text-sm text-white" style="background:linear-gradient(135deg,#ef4444,#f97316)">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase modal -->
+<div id="firebase-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="modal-backdrop absolute inset-0 bg-black/50 backdrop-blur-sm" data-close></div>
+  <div class="modal-panel relative w-full max-w-lg glass rounded-2xl p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-xl font-display font-bold"><i class="fa-solid fa-cloud mr-2"></i>Firebase (optional)</h3>
+      <button data-close class="w-9 h-9 rounded-lg hover:bg-white/10"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <p class="text-sm opacity-70 mb-3">Paste your Firebase web config to sync to Firestore. Leave empty to use local storage.</p>
+    <textarea id="fb-config" rows="8" class="w-full px-3 py-2.5 rounded-xl font-mono text-xs" placeholder='{"apiKey":"...","authDomain":"...","projectId":"..."}'></textarea>
+    <div class="mt-4 flex gap-2 justify-end">
+      <button id="fb-disconnect" class="px-4 py-2.5 rounded-xl hover:bg-white/10 font-semibold text-sm">Disconnect</button>
+      <button id="fb-connect" class="ripple btn-primary px-5 py-2.5 rounded-xl font-semibold text-sm">Connect</button>
+    </div>
+  </div>
+</div>
+
+<!-- Shortcuts modal -->
+<div id="shortcuts-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="modal-backdrop absolute inset-0 bg-black/50 backdrop-blur-sm" data-close></div>
+  <div class="modal-panel relative w-full max-w-md glass rounded-2xl p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-xl font-display font-bold">Keyboard Shortcuts</h3>
+      <button data-close class="w-9 h-9 rounded-lg hover:bg-white/10"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <ul class="space-y-2 text-sm">
+      <li class="flex justify-between p-2 rounded-lg hover:bg-white/5"><span>New wish</span><kbd class="px-2 py-0.5 rounded border border-current opacity-70">N</kbd></li>
+      <li class="flex justify-between p-2 rounded-lg hover:bg-white/5"><span>Focus search</span><kbd class="px-2 py-0.5 rounded border border-current opacity-70">/</kbd></li>
+      <li class="flex justify-between p-2 rounded-lg hover:bg-white/5"><span>Toggle theme</span><kbd class="px-2 py-0.5 rounded border border-current opacity-70">T</kbd></li>
+      <li class="flex justify-between p-2 rounded-lg hover:bg-white/5"><span>Close modal</span><kbd class="px-2 py-0.5 rounded border border-current opacity-70">Esc</kbd></li>
+    </ul>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toasts" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2"></div>
+
+<!-- Hidden import input -->
+<input id="import-file" type="file" accept="application/json" class="hidden" />
+
+<script type="module">
+/* ============================================================
+   Wishly — Premium Wishlist App
+   Vanilla ES2024, single-file, no build tools.
+   ============================================================ */
+
+// ---------- Constants ----------
+const LS_ITEMS  = 'wishly.items.v1';
+const LS_BUDGET = 'wishly.budget.v1';
+const LS_THEME  = 'wishly.theme.v1';
+const LS_FB     = 'wishly.firebase.v1';
+
+// ---------- Tiny helpers ----------
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const uid = () => crypto.randomUUID?.() ?? (Date.now().toString(36) + Math.random().toString(36).slice(2));
+const fmt$ = n => (Number(n)||0).toLocaleString(undefined, {maximumFractionDigits: 2});
+const debounce = (fn, ms=200) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// ---------- Website detection ----------
+const SITES = [
+  {re:/amazon\./i,        name:'Amazon',    icon:'fa-brands fa-amazon',  color:'#ff9900'},
+  {re:/ebay\./i,          name:'eBay',      icon:'fa-brands fa-ebay',    color:'#e53238'},
+  {re:/etsy\./i,          name:'Etsy',      icon:'fa-brands fa-etsy',    color:'#f16521'},
+  {re:/apple\./i,         name:'Apple',     icon:'fa-brands fa-apple',   color:'#a2aaad'},
+  {re:/nike\./i,          name:'Nike',      icon:'fa-solid fa-shoe-prints', color:'#111'},
+  {re:/aliexpress\./i,    name:'AliExpress',icon:'fa-solid fa-cart-shopping', color:'#e62e04'},
+  {re:/shopify\./i,       name:'Shopify',   icon:'fa-brands fa-shopify', color:'#95bf47'},
+  {re:/walmart\./i,       name:'Walmart',   icon:'fa-solid fa-store',    color:'#0071dc'},
+  {re:/target\./i,        name:'Target',    icon:'fa-solid fa-bullseye', color:'#cc0000'},
+  {re:/ikea\./i,          name:'IKEA',      icon:'fa-solid fa-couch',    color:'#0058a3'},
+  {re:/bestbuy\./i,       name:'Best Buy',  icon:'fa-solid fa-plug',     color:'#0046be'},
+  {re:/youtube\./i,       name:'YouTube',   icon:'fa-brands fa-youtube', color:'#ff0000'},
+  {re:/github\./i,        name:'GitHub',    icon:'fa-brands fa-github',  color:'#333'},
+];
+function detectSite(url) {
+  if (!url) return null;
+  try {
+    const host = new URL(url).hostname.replace(/^www\./,'');
+    const match = SITES.find(s => s.re.test(host));
+    if (match) return match;
+    return { name: host, icon: 'fa-solid fa-globe', color: '#6366f1' };
+  } catch { return null; }
+}
+
+// ---------- Store (localStorage <-> Firestore) ----------
+const store = {
+  mode: 'local', // 'local' | 'firebase'
+  fbUnsub: null, fbApp: null, fbDb: null,
+  items: [], budget: 0,
+
+  async init() {
+    this.items  = JSON.parse(localStorage.getItem(LS_ITEMS)  || '[]');
+    this.budget = Number(localStorage.getItem(LS_BUDGET)     || 0);
+    const cfg = localStorage.getItem(LS_FB);
+    if (cfg) { try { await this.connectFirebase(JSON.parse(cfg), true); } catch(e){ console.warn(e); } }
+  },
+
+  persistLocal() { localStorage.setItem(LS_ITEMS, JSON.stringify(this.items)); },
+  setBudget(v)  { this.budget = Number(v)||0; localStorage.setItem(LS_BUDGET, String(this.budget)); render(); },
+
+  async add(item) {
+    item.id ||= uid();
+    item.createdAt ||= Date.now();
+    item.updatedAt = Date.now();
+    if (this.mode === 'firebase') {
+      const { doc, setDoc } = this.fb;
+      await setDoc(doc(this.fbDb, 'wishly', item.id), item);
+    } else {
+      this.items.unshift(item); this.persistLocal(); render();
+    }
+  },
+  async update(item) {
+    item.updatedAt = Date.now();
+    if (this.mode === 'firebase') {
+      const { doc, setDoc } = this.fb;
+      await setDoc(doc(this.fbDb, 'wishly', item.id), item);
+    } else {
+      const i = this.items.findIndex(x => x.id === item.id);
+      if (i>=0) this.items[i] = item; this.persistLocal(); render();
+    }
+  },
+  async remove(id) {
+    if (this.mode === 'firebase') {
+      const { doc, deleteDoc } = this.fb;
+      await deleteDoc(doc(this.fbDb, 'wishly', id));
+    } else {
+      this.items = this.items.filter(x => x.id !== id); this.persistLocal(); render();
+    }
+  },
+  async replaceAll(items) {
+    if (this.mode === 'firebase') {
+      const { doc, setDoc } = this.fb;
+      await Promise.all(items.map(it => { it.id ||= uid(); return setDoc(doc(this.fbDb,'wishly',it.id), it); }));
+    } else {
+      this.items = items; this.persistLocal(); render();
+    }
+  },
+
+  async connectFirebase(config, silent=false) {
+    const app = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+    const fs  = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+    this.fbApp = app.initializeApp(config, 'wishly-' + Date.now());
+    this.fbDb  = fs.getFirestore(this.fbApp);
+    this.fb    = fs;
+    this.mode  = 'firebase';
+    localStorage.setItem(LS_FB, JSON.stringify(config));
+    // subscribe
+    const { collection, onSnapshot } = fs;
+    this.fbUnsub?.();
+    this.fbUnsub = onSnapshot(collection(this.fbDb, 'wishly'), snap => {
+      this.items = snap.docs.map(d => d.data());
+      render();
+    }, err => { console.error(err); toast('Firestore error, falling back to local', 'error'); this.disconnectFirebase(); });
+    setStorageBadge('Firebase', '#f59e0b');
+    if (!silent) toast('Connected to Firebase ✓', 'success');
+  },
+  disconnectFirebase() {
+    this.fbUnsub?.(); this.fbUnsub = null;
+    this.mode = 'local';
+    localStorage.removeItem(LS_FB);
+    setStorageBadge('Local', '#10b981');
+    this.items = JSON.parse(localStorage.getItem(LS_ITEMS) || '[]');
+    render();
+  },
+};
+
+function setStorageBadge(label, color) {
+  $('#storage-label').textContent = label;
+  $('#storage-dot').style.background = color;
+}
+
+// ---------- Theme ----------
+const themes = ['system','light','dark'];
+const themeIcons = { system: 'fa-desktop', light: 'fa-sun', dark: 'fa-moon' };
+function applyTheme(mode) {
+  const dark = mode === 'dark' || (mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.classList.toggle('dark', dark);
+  $('#theme-icon').className = 'fa-solid ' + themeIcons[mode];
+}
+function cycleTheme() {
+  const cur = localStorage.getItem(LS_THEME) || 'system';
+  const next = themes[(themes.indexOf(cur)+1) % themes.length];
+  localStorage.setItem(LS_THEME, next);
+  applyTheme(next);
+  toast(`Theme: ${next}`, 'info');
+}
+applyTheme(localStorage.getItem(LS_THEME) || 'system');
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if ((localStorage.getItem(LS_THEME)||'system') === 'system') applyTheme('system');
+});
+
+// ---------- Toasts ----------
+function toast(msg, kind='info') {
+  const colors = {
+    success: 'linear-gradient(135deg,#10b981,#22d3ee)',
+    error:   'linear-gradient(135deg,#ef4444,#f97316)',
+    info:    'linear-gradient(135deg,#6366f1,#8b5cf6)',
+  };
+  const icons = { success:'fa-circle-check', error:'fa-triangle-exclamation', info:'fa-circle-info' };
+  const el = document.createElement('div');
+  el.className = 'toast-enter glass rounded-xl px-4 py-3 flex items-center gap-3 min-w-[240px] shadow-2xl';
+  el.innerHTML = `<span class="w-8 h-8 rounded-lg flex items-center justify-center text-white" style="background:${colors[kind]}"><i class="fa-solid ${icons[kind]}"></i></span><span class="text-sm font-medium">${escapeHtml(msg)}</span>`;
+  $('#toasts').appendChild(el);
+  setTimeout(() => { el.classList.remove('toast-enter'); el.classList.add('toast-exit'); setTimeout(() => el.remove(), 300); }, 2600);
+}
+
+// ---------- Confetti ----------
+function confetti() {
+  const colors = ['#6366f1','#ec4899','#06b6d4','#f59e0b','#10b981'];
+  for (let i=0;i<80;i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random()*100 + 'vw';
+    c.style.background = colors[i%colors.length];
+    c.style.transform = `rotate(${Math.random()*360}deg)`;
+    c.style.animation = `confettiFall ${1.5 + Math.random()*1.5}s ${Math.random()*0.3}s ease-out forwards`;
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3500);
+  }
+}
+
+// ---------- Counter animation ----------
+function animateCounter(el, to, dur=700) {
+  const from = Number(el.dataset.v || 0);
+  const start = performance.now();
+  const step = t => {
+    const p = Math.min((t-start)/dur, 1);
+    const eased = 1 - Math.pow(1-p, 3);
+    el.textContent = fmt$(Math.round((from + (to-from)*eased) * 100) / 100);
+    if (p<1) requestAnimationFrame(step); else el.dataset.v = to;
+  };
+  requestAnimationFrame(step);
+}
+
+// ---------- Render ----------
+const state = { search:'', sort:'newest' };
+
+function filtered() {
+  const q = state.search.trim().toLowerCase();
+  let arr = store.items.filter(x =>
+    !q || [x.name, x.notes, x.url].some(v => (v||'').toLowerCase().includes(q))
+  );
+  const priRank = { High: 0, Medium: 1, Low: 2 };
+  switch (state.sort) {
+    case 'oldest':      arr.sort((a,b)=>(a.createdAt||0)-(b.createdAt||0)); break;
+    case 'price-desc':  arr.sort((a,b)=>(Number(b.price)||0)-(Number(a.price)||0)); break;
+    case 'price-asc':   arr.sort((a,b)=>(Number(a.price)||0)-(Number(b.price)||0)); break;
+    case 'priority':    arr.sort((a,b)=>(priRank[a.priority]??3)-(priRank[b.priority]??3)); break;
+    default:            arr.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  }
+  return arr;
+}
+
+function cardHTML(it) {
+  const site = detectSite(it.url);
+  const img = it.image ? `<img src="${escapeHtml(it.image)}" alt="${escapeHtml(it.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" class="w-full h-full object-cover" />` : '';
+  return `
+  <article class="fade-in glass rounded-2xl overflow-hidden card-hover flex flex-col" data-id="${it.id}">
+    <div class="img-wrap aspect-video relative">
+      ${img}
+      <div class="absolute inset-0 flex items-center justify-center text-4xl opacity-40" style="${it.image?'display:none':''}">
+        <i class="fa-regular fa-image"></i>
+      </div>
+      <span class="absolute top-2 left-2 text-xs font-semibold px-2.5 py-1 rounded-full pri-${it.priority||'Medium'} shadow">
+        <i class="fa-solid fa-flag mr-1"></i>${it.priority||'Medium'}
+      </span>
+      ${site ? `<span class="absolute top-2 right-2 text-xs font-semibold px-2.5 py-1 rounded-full glass flex items-center gap-1.5"><i class="${site.icon}" style="color:${site.color}"></i>${escapeHtml(site.name)}</span>` : ''}
+    </div>
+    <div class="p-4 flex-1 flex flex-col">
+      <div class="flex items-start justify-between gap-2">
+        <h3 class="font-display font-bold text-lg leading-tight line-clamp-2">${escapeHtml(it.name)}</h3>
+        <span class="text-lg font-bold gradient-text whitespace-nowrap">$${fmt$(it.price)}</span>
+      </div>
+      ${it.notes ? `<p class="text-sm opacity-70 mt-2 line-clamp-2">${escapeHtml(it.notes)}</p>` : ''}
+      <div class="mt-auto pt-3 flex items-center gap-1.5">
+        ${it.url ? `<a href="${escapeHtml(it.url)}" target="_blank" rel="noopener" class="flex-1 text-center px-3 py-2 rounded-lg text-sm font-semibold hover:bg-white/10 border border-white/10 transition"><i class="fa-solid fa-arrow-up-right-from-square mr-1"></i>Visit</a>` : ''}
+        <button data-edit="${it.id}" title="Edit" class="w-9 h-9 rounded-lg hover:bg-white/10 border border-white/10"><i class="fa-solid fa-pen"></i></button>
+        <button data-del="${it.id}"  title="Delete" class="w-9 h-9 rounded-lg hover:bg-red-500/10 hover:text-red-500 border border-white/10"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>
+  </article>`;
+}
+
+function render() {
+  const grid = $('#grid'), empty = $('#empty');
+  const items = filtered();
+  grid.innerHTML = items.map(cardHTML).join('');
+  empty.classList.toggle('hidden', items.length > 0 || store.items.length === 0 && !state.search);
+  if (store.items.length === 0) empty.classList.remove('hidden');
+
+  // stats
+  const total = store.items.length;
+  const value = store.items.reduce((s,x)=>s+(Number(x.price)||0), 0);
+  animateCounter($('#stat-count'), total);
+  animateCounter($('#stat-value'), value);
+
+  // budget
+  const budget = store.budget;
+  $('#budget-input').value = budget || '';
+  const pct = budget > 0 ? Math.min(100, (value/budget)*100) : 0;
+  const bar = $('#budget-bar');
+  bar.style.width = pct + '%';
+  bar.style.background = pct < 70 ? 'linear-gradient(90deg,#10b981,#06b6d4)'
+                     : pct < 100 ? 'linear-gradient(90deg,#f59e0b,#fbbf24)'
+                                 : 'linear-gradient(90deg,#ef4444,#f97316)';
+  $('#budget-label').textContent = budget > 0
+    ? `$${fmt$(value)} of $${fmt$(budget)} (${pct.toFixed(0)}%)`
+    : 'Set a budget to track progress';
+}
+
+function skeletonGrid(n=6) {
+  $('#grid').innerHTML = Array.from({length:n}).map(() => `
+    <div class="glass rounded-2xl overflow-hidden">
+      <div class="skeleton aspect-video"></div>
+      <div class="p-4 space-y-2">
+        <div class="skeleton h-5 w-3/4 rounded"></div>
+        <div class="skeleton h-4 w-1/2 rounded"></div>
+        <div class="skeleton h-8 w-full rounded mt-4"></div>
+      </div>
+    </div>`).join('');
+}
+
+// ---------- Modals ----------
+function openModal(sel) { $(sel).classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
+function closeModal(sel) { $(sel).classList.add('hidden'); document.body.style.overflow = ''; }
+document.addEventListener('click', e => {
+  if (e.target.matches('[data-close]')) {
+    const m = e.target.closest('.fixed'); if (m) closeModal('#'+m.id);
+  }
+});
+
+let editingId = null;
+function openForm(item=null) {
+  editingId = item?.id ?? null;
+  $('#modal-title').textContent = item ? 'Edit Wish' : 'Add Wish';
+  const f = $('#product-form');
+  f.reset();
+  if (item) {
+    f.id.value = item.id;
+    f.name.value = item.name || '';
+    f.price.value = item.price ?? '';
+    f.priority.value = item.priority || 'Medium';
+    f.url.value = item.url || '';
+    f.image.value = item.image || '';
+    f.notes.value = item.notes || '';
+  }
+  openModal('#modal');
+  setTimeout(() => f.name.focus(), 50);
+}
+
+$('#product-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const data = Object.fromEntries(fd.entries());
+  data.price = Number(data.price) || 0;
+  const isNew = !editingId;
+  const existing = isNew ? null : store.items.find(x => x.id === editingId);
+  const item = { ...(existing || {}), ...data, id: editingId || uid() };
+  try {
+    if (isNew) { await store.add(item); toast('Wish added ✨','success'); confetti(); }
+    else      { await store.update(item); toast('Wish updated','success'); }
+    closeModal('#modal');
+  } catch (err) { console.error(err); toast('Save failed', 'error'); }
+});
+
+// ---------- Delete flow ----------
+let pendingDelete = null;
+$('#confirm-yes').addEventListener('click', async () => {
+  if (!pendingDelete) return;
+  try { await store.remove(pendingDelete); toast('Wish deleted','success'); }
+  catch { toast('Delete failed','error'); }
+  pendingDelete = null; closeModal('#confirm');
+});
+
+// ---------- Grid event delegation ----------
+$('#grid').addEventListener('click', e => {
+  const editBtn = e.target.closest('[data-edit]');
+  const delBtn  = e.target.closest('[data-del]');
+  if (editBtn) { const it = store.items.find(x=>x.id===editBtn.dataset.edit); if (it) openForm(it); }
+  if (delBtn)  { pendingDelete = delBtn.dataset.del; openModal('#confirm'); }
+});
+
+// ---------- Toolbar ----------
+$('#search').addEventListener('input', debounce(e => { state.search = e.target.value; render(); }, 120));
+$('#sort').addEventListener('change', e => { state.sort = e.target.value; render(); });
+$('#budget-input').addEventListener('change', e => store.setBudget(e.target.value));
+
+// ---------- Add buttons ----------
+$('#add-btn').addEventListener('click', () => openForm());
+$('#fab').addEventListener('click', () => openForm());
+$('#empty-add').addEventListener('click', () => openForm());
+$('#theme-btn').addEventListener('click', cycleTheme);
+
+// ---------- Menu actions ----------
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-action]'); if (!b) return;
+  const details = b.closest('details'); if (details) details.open = false;
+  const map = {
+    'import': () => $('#import-file').click(),
+    'export-json': exportJSON,
+    'export-csv': exportCSV,
+    'firebase': () => { $('#fb-config').value = localStorage.getItem(LS_FB) || ''; openModal('#firebase-modal'); },
+    'shortcuts': () => openModal('#shortcuts-modal'),
+  };
+  map[b.dataset.action]?.();
+});
+
+// ---------- Import / Export ----------
+$('#import-file').addEventListener('change', async e => {
+  const file = e.target.files?.[0]; if (!file) return;
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    const items = Array.isArray(data) ? data : (Array.isArray(data.items) ? data.items : null);
+    if (!items) throw new Error('Invalid JSON');
+    const normalized = items.map(x => ({
+      id: x.id || uid(),
+      name: String(x.name || 'Untitled'),
+      price: Number(x.price) || 0,
+      priority: ['High','Medium','Low'].includes(x.priority) ? x.priority : 'Medium',
+      url: x.url || '', image: x.image || '', notes: x.notes || '',
+      createdAt: Number(x.createdAt) || Date.now(),
+      updatedAt: Date.now(),
+    }));
+    await store.replaceAll(normalized);
+    toast(`Imported ${normalized.length} items`, 'success');
+  } catch (err) { console.error(err); toast('Import failed: ' + err.message, 'error'); }
+  e.target.value = '';
+});
+
+function download(name, content, type) {
+  const blob = new Blob([content], {type});
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: name });
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 500);
+}
+function exportJSON() {
+  download('wishly-' + Date.now() + '.json', JSON.stringify(store.items, null, 2), 'application/json');
+  toast('JSON exported', 'success');
+}
+function exportCSV() {
+  const cols = ['id','name','price','priority','url','image','notes','createdAt','updatedAt'];
+  const esc = v => `"${String(v ?? '').replace(/"/g,'""')}"`;
+  const rows = [cols.join(','), ...store.items.map(it => cols.map(c => esc(it[c])).join(','))];
+  download('wishly-' + Date.now() + '.csv', rows.join('\n'), 'text/csv');
+  toast('CSV exported', 'success');
+}
+
+// ---------- Firebase modal actions ----------
+$('#fb-connect').addEventListener('click', async () => {
+  const raw = $('#fb-config').value.trim();
+  if (!raw) return toast('Paste a Firebase config first', 'error');
+  try {
+    const cfg = JSON.parse(raw);
+    await store.connectFirebase(cfg);
+    closeModal('#firebase-modal');
+  } catch (err) { console.error(err); toast('Firebase failed: ' + err.message, 'error'); }
+});
+$('#fb-disconnect').addEventListener('click', () => {
+  store.disconnectFirebase();
+  closeModal('#firebase-modal');
+  toast('Disconnected from Firebase', 'info');
+});
+
+// ---------- Ripple ----------
+document.addEventListener('click', e => {
+  const b = e.target.closest('.ripple'); if (!b) return;
+  const rect = b.getBoundingClientRect();
+  const r = document.createElement('span');
+  const size = Math.max(rect.width, rect.height);
+  r.className = 'r';
+  r.style.width = r.style.height = size + 'px';
+  r.style.left = (e.clientX - rect.left - size/2) + 'px';
+  r.style.top  = (e.clientY - rect.top  - size/2) + 'px';
+  b.appendChild(r); setTimeout(() => r.remove(), 650);
+});
+
+// ---------- Keyboard shortcuts ----------
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { $$('#modal,#confirm,#firebase-modal,#shortcuts-modal').forEach(m => m.classList.add('hidden')); document.body.style.overflow=''; return; }
+  const inField = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName);
+  if (inField) return;
+  if (e.key === '/') { e.preventDefault(); $('#search').focus(); }
+  else if (e.key.toLowerCase() === 'n') { e.preventDefault(); openForm(); }
+  else if (e.key.toLowerCase() === 't') { e.preventDefault(); cycleTheme(); }
+});
+
+// ---------- Boot ----------
+(async () => {
+  skeletonGrid();
+  await store.init();
+  render();
+})();
+</script>
+</body>
+</html>
