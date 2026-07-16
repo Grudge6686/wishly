@@ -449,34 +449,49 @@
         }
 
         async function tryConnectSavedFirebase() {
-            const savedConfig = localStorage.getItem('wishlist_firebase_config');
-            if (savedConfig) {
+    const savedConfig = localStorage.getItem('wishlist_firebase_config');
+    if (savedConfig) {
+        try {
+            const config = JSON.parse(savedConfig);
+            let app;
+            
+            // 🔥 গুরুত্বপূর্ণ ফিক্স: যদি অলরেডি [DEFAULT] অ্যাপ থেকে থাকে, তবে সেটি ব্যবহার করবে
+            if (getApps().length === 0) {
+                app = initializeApp(config);
+            } else {
+                // কোনো কারণে আগের কানেকশন আটকে থাকলে তা ডিলিট করে নতুন করে ইনিশিয়ালাইজ করবে
                 try {
-                    const config = JSON.parse(savedConfig);
-                    const apps = getApps();
-                    
-                    // FIXED: Properly delete existing app to avoid "Default app already exists"
-                    for (const existingApp of apps) {
+                    const existingApps = getApps();
+                    for (const existingApp of existingApps) {
                         await deleteApp(existingApp);
                     }
-                    
-                    const app = initializeApp(config);
-                    auth = getAuth(app);
-                    db = getFirestore(app);
-                    
-                    document.getElementById('statusIndicator').className = "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-brand-500/10 text-brand-500";
-                    document.getElementById('statusIndicator').innerHTML = `<span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span> Firebase`;
-                    
-                    initAuthFlow();
+                    app = initializeApp(config);
                 } catch (e) {
-                    console.error("Firebase connection error:", e);
-                    showToast("Firebase Config error! Falling back to Local.", "error");
-                    loadLocalMode();
+                    // অথবা রানিং অ্যাপটি সরাসরি রিসিভ করবে
+                    app = getApps()[0];
                 }
-            } else {
-                loadLocalMode();
             }
+            
+            auth = getAuth(app);
+            db = getFirestore(app);
+            
+            // স্ট্যাটাস ইন্ডিকেটর আপডেট
+            const statusIndicator = document.getElementById('statusIndicator');
+            if (statusIndicator) {
+                statusIndicator.className = "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-brand-500/10 text-brand-500";
+                statusIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span> Firebase`;
+            }
+            
+            initAuthFlow();
+        } catch (e) {
+            console.error("Firebase connection error:", e);
+            showToast("Firebase Config error! Falling back to Local.", "error");
+            loadLocalMode();
         }
+    } else {
+        loadLocalMode();
+    }
+}
 
         function loadLocalMode() {
             document.getElementById('statusIndicator').className = "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-500";
