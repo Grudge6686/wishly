@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>My Wishlist - Premium</title>
     
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -41,7 +39,6 @@
         }
     </script>
 
-    <!-- Icons & Confetti -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -99,7 +96,6 @@
 </head>
 <body class="bg-animated text-slate-800 dark:text-slate-200 font-sans min-h-screen transition-colors duration-500 relative">
 
-    <!-- Navbar -->
     <nav class="glass sticky top-0 z-40 px-4 py-3 shadow-sm transition-all duration-300">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
@@ -107,20 +103,17 @@
                     <i class="ph ph-gift text-2xl"></i>
                 </div>
                 <h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white hidden sm:block">Wishlist</h1>
-                <!-- Connection Status Indicator -->
                 <div id="statusIndicator" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-500">
                     <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> Local
                 </div>
             </div>
             
             <div class="flex items-center gap-2 sm:gap-4">
-                <!-- Theme Toggle -->
                 <button id="themeToggle" class="p-2.5 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400 ripple-btn" title="Toggle Theme">
                     <i class="ph ph-moon text-xl dark:hidden"></i>
                     <i class="ph ph-sun text-xl hidden dark:block"></i>
                 </button>
 
-                <!-- Actions Dropdown (Mobile Friendly) -->
                 <div class="relative group">
                     <button class="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-sm font-medium ripple-btn">
                         <i class="ph ph-database text-lg"></i> <span class="hidden sm:inline">Data</span>
@@ -137,7 +130,6 @@
                         <button id="exportCsvBtn" class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800/50 text-left text-sm transition-colors text-slate-700 dark:text-slate-300 border-t border-slate-200 dark:border-slate-700/50">
                             <i class="ph ph-file-csv text-yellow-500 text-lg"></i> Export CSV
                         </button>
-                        <!-- Firebase Setup Config Panel Button -->
                         <button id="firebaseConfigBtn" class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800/50 text-left text-sm transition-colors text-brand-500 font-semibold border-t border-slate-200 dark:border-slate-700/50">
                             <i class="ph ph-gear text-brand-500 text-lg"></i> Firebase Setup
                         </button>
@@ -147,7 +139,6 @@
         </div>
     </nav>
 
-    <!-- Firebase Connection Modal -->
     <div id="firebaseModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-2xl max-w-md w-full mx-4 transform scale-95 transition-transform duration-300 border border-slate-200 dark:border-slate-700">
             <div class="w-12 h-12 rounded-full bg-brand-100 dark:bg-brand-500/20 text-brand-500 flex items-center justify-center mb-4 text-2xl mx-auto">
@@ -165,13 +156,10 @@
         </div>
     </div>
 
-    <!-- Main Content -->
     <main class="max-w-7xl mx-auto p-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
         
-        <!-- Left Sidebar: Stats & Form -->
         <div class="lg:col-span-4 space-y-6">
             
-            <!-- Dashboard Stats & Budget -->
             <div class="glass p-6 rounded-2xl shadow-sm relative overflow-hidden group">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-brand-500/10 rounded-full blur-3xl -mr-10 -mt-10 transition-transform group-hover:scale-150"></div>
                 
@@ -190,7 +178,6 @@
                     </div>
                 </div>
 
-                <!-- Budget Bar -->
                 <div class="space-y-2">
                     <div class="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
                         <span>Budget Progress</span>
@@ -212,7 +199,6 @@
                 </div>
             </div>
 
-            <!-- Add/Edit Form -->
             <div id="formSection" class="glass p-6 rounded-2xl shadow-sm transition-all duration-300 border-t-4 border-t-brand-500 scroll-mt-24">
                 <h2 id="formTitle" class="text-lg font-bold text-slate-900 dark:text-white mb-5 flex items-center gap-2">
                     <i class="ph ph-plus-circle text-brand-500 text-xl"></i> Add Product
@@ -296,10 +282,8 @@
             </div>
         </div>
 
-        <!-- Right Side: Product List -->
         <div class="lg:col-span-8 space-y-6">
             
-            <!-- Controls (Search & Sort) -->
             <div class="glass p-2 sm:p-3 rounded-2xl shadow-sm flex flex-col sm:flex-row gap-3 items-center z-10 relative">
                 <div class="relative flex-1 w-full">
                     <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-lg"></i>
@@ -324,12 +308,9 @@
                 </div>
             </div>
 
-            <!-- Loader Skeleton -->
             <div id="loader" class="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full">
-                <!-- Skeletons generated by JS -->
-            </div>
+                </div>
 
-            <!-- Empty State -->
             <div id="emptyState" class="hidden-safely flex-col items-center justify-center py-20 text-center glass rounded-3xl animate-fade-in border-dashed border-2 border-slate-300 dark:border-slate-700">
                 <div class="w-32 h-32 mb-6 text-brand-500/50">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" class="w-full h-full drop-shadow-xl">
@@ -345,23 +326,18 @@
                 </button>
             </div>
 
-            <!-- Grid -->
             <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-5 auto-rows-max">
-                <!-- Products injected via JS -->
-            </div>
+                </div>
             
         </div>
     </main>
 
-    <!-- Floating Action Button (Mobile Only) -->
     <button id="fab" class="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-brand-600 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl hover:bg-brand-500 transition-transform hover:scale-110 active:scale-90 z-40 ripple-btn transform translate-y-24 transition-all duration-500">
         <i class="ph ph-plus"></i>
     </button>
 
-    <!-- Toasts Container -->
     <div id="toastContainer" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4"></div>
 
-    <!-- Custom Delete Modal -->
     <div id="deleteModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-2xl max-w-sm w-full mx-4 transform scale-95 transition-transform duration-300 border border-slate-200 dark:border-slate-700">
             <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-500/20 text-red-500 flex items-center justify-center mb-4 text-2xl mx-auto">
@@ -376,7 +352,6 @@
         </div>
     </div>
 
-    <!-- Firebase & Logic (ES2024) -->
     <script type="module">
         import { initializeApp, getApps, deleteApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -479,9 +454,12 @@
                 try {
                     const config = JSON.parse(savedConfig);
                     const apps = getApps();
-                    if (apps.length > 0) {
-                        await deleteApp(apps[0]);
+                    
+                    // FIXED: Properly delete existing app to avoid "Default app already exists"
+                    for (const existingApp of apps) {
+                        await deleteApp(existingApp);
                     }
+                    
                     const app = initializeApp(config);
                     auth = getAuth(app);
                     db = getFirestore(app);
@@ -756,7 +734,6 @@
                             ${p.priority}
                         </div>
 
-                        <!-- Hover Actions Overlay -->
                         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                             <button onclick="editProduct('${p.id}')" class="w-10 h-10 rounded-full bg-white text-blue-500 flex items-center justify-center hover:scale-110 transition-transform shadow-lg ripple-btn" title="Edit">
                                 <i class="ph-bold ph-pencil-simple text-lg"></i>
