@@ -1,1052 +1,863 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>My Wishlist - Premium</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: {
-                        brand: { 50: '#f5f3ff', 100: '#ede9fe', 400: '#a78bfa', 500: '#8b5cf6', 600: '#7c3aed', 900: '#4c1d95', 950: '#2e1065' },
-                        surface: { light: '#ffffff', dark: '#0f172a' }
-                    },
-                    animation: {
-                        'gradient': 'gradient 15s ease infinite',
-                        'shimmer': 'shimmer 2s linear infinite',
-                        'slide-up': 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                        'fade-in': 'fadeIn 0.2s ease-out forwards',
-                        'scale-in': 'scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards'
-                    },
-                    keyframes: {
-                        gradient: { '0%, 100%': { backgroundPosition: '0% 50%' }, '50%': { backgroundPosition: '100% 50%' } },
-                        shimmer: { '0%': { transform: 'translateX(-100%)' }, '100%': { transform: 'translateX(100%)' } },
-                        slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
-                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-                        scaleIn: { '0%': { transform: 'scale(0.95)', opacity: '0' }, '100%': { transform: 'scale(1)', opacity: '1' } }
-                    }
-                }
-            }
-        }
-    </script>
-
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
-    <style>
-        /* Modern Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.3); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(156, 163, 175, 0.5); }
-
-        /* Animated Background Gradient */
-        .bg-animated {
-            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #0f172a, #172554);
-            background-size: 400% 400%;
-            animation: gradient 15s ease infinite;
-        }
-        .light .bg-animated {
-            background: linear-gradient(-45deg, #f8fafc, #f3e8ff, #f8fafc, #e0f2fe);
-            background-size: 400% 400%;
-        }
-
-        /* Glassmorphism */
-        .glass {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        .dark .glass {
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Ripple Effect */
-        .ripple-btn { position: relative; overflow: hidden; }
-        .ripple {
-            position: absolute; border-radius: 50%; transform: scale(0);
-            animation: ripple-anim 0.6s linear; background: rgba(255, 255, 255, 0.3);
-        }
-        @keyframes ripple-anim { to { transform: scale(4); opacity: 0; } }
-
-        /* Input overrides for premium feel */
-        input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-
-        /* Hide elements dynamically */
-        .hidden-safely { display: none !important; }
-        
-        /* Line Clamp */
-        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    </style>
-</head>
-<body class="bg-animated text-slate-800 dark:text-slate-200 font-sans min-h-screen transition-colors duration-500 relative">
-
-    <nav class="glass sticky top-0 z-40 px-4 py-3 shadow-sm transition-all duration-300">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center shadow-lg shadow-brand-500/20 text-white">
-                    <i class="ph ph-gift text-2xl"></i>
-                </div>
-                <h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white hidden sm:block">Wishlist</h1>
-                <div id="statusIndicator" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-500">
-                    <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> Local
-                </div>
-            </div>
-            
-            <div class="flex items-center gap-2 sm:gap-4">
-                <button id="themeToggle" class="p-2.5 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400 ripple-btn" title="Toggle Theme">
-                    <i class="ph ph-moon text-xl dark:hidden"></i>
-                    <i class="ph ph-sun text-xl hidden dark:block"></i>
-                </button>
-
-                <div class="relative group">
-                    <button class="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-sm font-medium ripple-btn">
-                        <i class="ph ph-database text-lg"></i> <span class="hidden sm:inline">Data</span>
-                        <i class="ph ph-caret-down"></i>
-                    </button>
-                    <div class="absolute right-0 mt-2 w-48 glass rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right border dark:border-slate-700/50 py-1 z-50">
-                        <label class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800/50 cursor-pointer text-sm transition-colors text-slate-700 dark:text-slate-300">
-                            <i class="ph ph-upload-simple text-blue-500 text-lg"></i> Import JSON
-                            <input type="file" id="importJsonBtn" accept=".json" class="hidden">
-                        </label>
-                        <button id="exportJsonBtn" class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800/50 text-left text-sm transition-colors text-slate-700 dark:text-slate-300">
-                            <i class="ph ph-download-simple text-green-500 text-lg"></i> Export JSON
-                        </button>
-                        <button id="exportCsvBtn" class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800/50 text-left text-sm transition-colors text-slate-700 dark:text-slate-300 border-t border-slate-200 dark:border-slate-700/50">
-                            <i class="ph ph-file-csv text-yellow-500 text-lg"></i> Export CSV
-                        </button>
-                        <button id="firebaseConfigBtn" class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800/50 text-left text-sm transition-colors text-brand-500 font-semibold border-t border-slate-200 dark:border-slate-700/50">
-                            <i class="ph ph-gear text-brand-500 text-lg"></i> Firebase Setup
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <div id="firebaseModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-2xl max-w-md w-full mx-4 transform scale-95 transition-transform duration-300 border border-slate-200 dark:border-slate-700">
-            <div class="w-12 h-12 rounded-full bg-brand-100 dark:bg-brand-500/20 text-brand-500 flex items-center justify-center mb-4 text-2xl mx-auto">
-                <i class="ph ph-fire"></i>
-            </div>
-            <h3 class="text-xl font-bold text-center text-slate-900 dark:text-white mb-2">Connect Firebase Cloud</h3>
-            <p class="text-center text-slate-500 dark:text-slate-400 text-xs mb-4">Paste your Firebase web app configuration JSON to sync your wishlist across all devices.</p>
-            
-            <textarea id="firebaseConfigInput" rows="6" placeholder='{&#10;  "apiKey": "AIzaSy...",&#10;  "authDomain": "project.firebaseapp.com",&#10;  "projectId": "project-id",&#10;  "storageBucket": "project.appspot.com",&#10;  "messagingSenderId": "12345678",&#10;  "appId": "1:123:web:abc"&#10;}' class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-xs font-mono focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all resize-none mb-4"></textarea>
-
-            <div class="flex gap-3">
-                <button id="closeFirebaseBtn" class="flex-1 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors active:scale-95">Cancel</button>
-                <button id="saveFirebaseBtn" class="flex-1 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold shadow-lg shadow-brand-500/30 transition-colors active:scale-95">Connect</button>
-            </div>
-        </div>
-    </div>
-
-    <main class="max-w-7xl mx-auto p-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
-        
-        <div class="lg:col-span-4 space-y-6">
-            
-            <div class="glass p-6 rounded-2xl shadow-sm relative overflow-hidden group">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-brand-500/10 rounded-full blur-3xl -mr-10 -mt-10 transition-transform group-hover:scale-150"></div>
-                
-                <div class="flex justify-between items-end mb-6">
-                    <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Total Items</p>
-                        <p class="text-4xl font-bold text-slate-900 dark:text-white flex items-baseline gap-1">
-                            <span id="totalCount">0</span>
-                        </p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Total Cost</p>
-                        <p class="text-2xl font-bold text-brand-600 dark:text-brand-400">
-                            ₹ <span id="totalCost">0</span>
-                        </p>
-                    </div>
-                </div>
-
-                <div class="space-y-2">
-                    <div class="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
-                        <span>Budget Progress</span>
-                        <div class="flex items-center gap-1 group/budget cursor-pointer" onclick="toggleBudgetInput()">
-                            <span id="budgetDisplay">₹1,00,000</span>
-                            <i class="ph ph-pencil-simple opacity-0 group-hover/budget:opacity-100 transition-opacity"></i>
-                        </div>
-                    </div>
-                    <div id="budgetInputContainer" class="hidden-safely mb-2 flex gap-2">
-                        <input type="number" id="budgetInput" placeholder="Enter budget..." class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-brand-500 transition-colors dark:text-white">
-                        <button onclick="saveBudget()" class="px-3 py-1.5 bg-brand-500 text-white rounded-lg text-sm hover:bg-brand-600 transition-colors">Save</button>
-                    </div>
-                    <div class="h-2.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                        <div id="budgetBar" class="h-full bg-gradient-to-r from-brand-400 to-brand-600 rounded-full transition-all duration-1000 ease-out w-0 relative">
-                            <div class="absolute inset-0 bg-white/20 animate-shimmer"></div>
-                        </div>
-                    </div>
-                    <p id="budgetWarning" class="text-xs text-red-500 font-medium hidden-safely mt-1"><i class="ph ph-warning-circle"></i> Over budget!</p>
-                </div>
-            </div>
-
-            <div id="formSection" class="glass p-6 rounded-2xl shadow-sm transition-all duration-300 border-t-4 border-t-brand-500 scroll-mt-24">
-                <h2 id="formTitle" class="text-lg font-bold text-slate-900 dark:text-white mb-5 flex items-center gap-2">
-                    <i class="ph ph-plus-circle text-brand-500 text-xl"></i> Add Product
-                </h2>
-                
-                <form id="productForm" class="space-y-4">
-                    <input type="hidden" id="editId" value="">
-                    
-                    <div class="space-y-1">
-                        <label class="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 ml-1">Product Link *</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="ph ph-link text-slate-400"></i>
-                            </div>
-                            <input type="url" id="link" required placeholder="https://amazon.in/..." 
-                                class="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/50 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all placeholder:text-slate-400">
-                        </div>
-                    </div>
-
-                    <div class="space-y-1">
-                        <label class="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 ml-1">Product Name *</label>
-                        <input type="text" id="name" required placeholder="Sony WH-1000XM5..." 
-                            class="w-full px-4 py-2.5 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/50 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all placeholder:text-slate-400">
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="space-y-1">
-                            <label class="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 ml-1">Price (₹) *</label>
-                            <input type="number" id="price" required min="0" step="1" placeholder="29990" 
-                                class="w-full px-4 py-2.5 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/50 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all font-medium">
-                        </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 ml-1">Store</label>
-                            <div class="relative">
-                                <input type="text" id="website" readonly placeholder="Auto-detect" 
-                                    class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl text-slate-600 dark:text-slate-400 text-sm cursor-not-allowed font-medium">
-                                <div id="storeIconPreview" class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-5 h-5 rounded-md overflow-hidden bg-white hidden-safely"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="space-y-1">
-                            <label class="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 ml-1">Image URL (Optional)</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="ph ph-image text-slate-400"></i>
-                                </div>
-                                <input type="url" id="imageUrl" placeholder="https://..." 
-                                    class="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/50 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/50 transition-all">
-                            </div>
-                        </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 ml-1">Priority</label>
-                            <div class="relative">
-                                <select id="priority" class="w-full px-4 py-2.5 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/50 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/50 transition-all appearance-none cursor-pointer">
-                                    <option value="High">🔴 High</option>
-                                    <option value="Medium" selected>🟡 Medium</option>
-                                    <option value="Low">🟢 Low</option>
-                                </select>
-                                <i class="ph ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="space-y-1">
-                        <label class="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 ml-1">Notes</label>
-                        <textarea id="notes" rows="2" placeholder="Wait for Big Billion Days..." 
-                            class="w-full px-4 py-2.5 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/50 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/50 transition-all resize-none"></textarea>
-                    </div>
-
-                    <div class="flex gap-3 pt-2">
-                        <button type="submit" id="submitBtn" class="flex-1 bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3 rounded-xl transition-all shadow-lg shadow-brand-500/25 flex items-center justify-center gap-2 ripple-btn active:scale-95">
-                            <i class="ph ph-check-circle text-lg"></i> <span>Save Product</span>
-                        </button>
-                        <button type="button" id="cancelEditBtn" class="hidden-safely px-4 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-white font-semibold py-3 rounded-xl transition-colors active:scale-95">
-                            Cancel
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div class="lg:col-span-8 space-y-6">
-            
-            <div class="glass p-2 sm:p-3 rounded-2xl shadow-sm flex flex-col sm:flex-row gap-3 items-center z-10 relative">
-                <div class="relative flex-1 w-full">
-                    <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-lg"></i>
-                    <input type="text" id="searchInput" placeholder="Search wishlist..." 
-                        class="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/50 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/50 transition-all">
-                </div>
-                
-                <div class="flex items-center gap-2 w-full sm:w-auto">
-                    <div class="relative w-full sm:w-48">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="ph ph-sort-ascending text-slate-400"></i>
-                        </div>
-                        <select id="sortSelect" class="w-full pl-9 pr-8 py-2.5 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/50 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/50 transition-all appearance-none cursor-pointer">
-                            <option value="dateDesc">Latest First</option>
-                            <option value="dateAsc">Oldest First</option>
-                            <option value="priceDesc">Price: High - Low</option>
-                            <option value="priceAsc">Price: Low - High</option>
-                            <option value="priority">Priority</option>
-                        </select>
-                        <i class="ph ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div id="loader" class="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full">
-                </div>
-
-            <div id="emptyState" class="hidden-safely flex-col items-center justify-center py-20 text-center glass rounded-3xl animate-fade-in border-dashed border-2 border-slate-300 dark:border-slate-700">
-                <div class="w-32 h-32 mb-6 text-brand-500/50">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" class="w-full h-full drop-shadow-xl">
-                        <path d="M21 8l-9-5-9 5 v8l9 5 9-5V8z" stroke-linejoin="round" stroke-linecap="round"/>
-                        <path d="M3 8l9 5 9-5" stroke-linejoin="round" stroke-linecap="round"/>
-                        <path d="M12 13v10" stroke-linejoin="round" stroke-linecap="round"/>
-                    </svg>
-                </div>
-                <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Wishlist is empty</h3>
-                <p class="text-slate-500 dark:text-slate-400 max-w-sm px-4">Start discovering and adding your favorite products from around the web.</p>
-                <button onclick="document.getElementById('link').focus()" class="mt-6 px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full text-sm font-semibold hover:scale-105 transition-transform active:scale-95 shadow-lg">
-                    Add First Product
-                </button>
-            </div>
-
-            <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-5 auto-rows-max">
-                </div>
-            
-        </div>
-    </main>
-
-    <button id="fab" class="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-brand-600 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl hover:bg-brand-500 transition-transform hover:scale-110 active:scale-90 z-40 ripple-btn transform translate-y-24 transition-all duration-500">
-        <i class="ph ph-plus"></i>
-    </button>
-
-    <div id="toastContainer" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4"></div>
-
-    <div id="deleteModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-2xl max-w-sm w-full mx-4 transform scale-95 transition-transform duration-300 border border-slate-200 dark:border-slate-700">
-            <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-500/20 text-red-500 flex items-center justify-center mb-4 text-2xl mx-auto">
-                <i class="ph ph-trash"></i>
-            </div>
-            <h3 class="text-xl font-bold text-center text-slate-900 dark:text-white mb-2">Delete Product?</h3>
-            <p class="text-center text-slate-500 dark:text-slate-400 text-sm mb-6">This action cannot be undone. It will be removed permanently.</p>
-            <div class="flex gap-3">
-                <button id="cancelDeleteBtn" class="flex-1 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors active:scale-95">Cancel</button>
-                <button id="confirmDeleteBtn" class="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold shadow-lg shadow-red-500/30 transition-colors active:scale-95">Delete</button>
-            </div>
-        </div>
-    </div>
-
-    <script type="module">
-        import { initializeApp, getApps, deleteApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Global State
-        let db = null, auth = null, currentUserId = null;
-        let products = [];
-        let unsubscribeSnapshot = null;
-        let itemToDelete = null;
-        let currentBudget = parseInt(localStorage.getItem('wishlist_budget')) || 100000;
-
-        const appId = 'default-premium-wishlist';
-        
-        // Icons/Logos mapping
-        const brandLogos = {
-            amazon: '<svg viewBox="0 0 24 24" fill="#FF9900" class="w-full h-full"><path d="M14.33 18.06c-1.89.87-4.14 1.33-6.49 1.33-3.64 0-6.72-1.37-8.32-3.62-.25-.34-.14-.58.26-.41 2.37 1.05 5.28 1.62 8.35 1.62 2.65 0 5.16-.43 7.39-1.2.37-.13.62.06.81.28z"/><path d="M22.06 17.58c-.5-1.12-2.18-1.52-3.8-1.74-.82-.11-1.21.32-.82.91.43.64 1.15 1.15 2.11 1.45.96.3 1.94.34 2.51.13.56-.21.5-.75 0-.75z"/></svg>',
-            flipkart: '<svg viewBox="0 0 24 24" fill="#2874F0" class="w-full h-full"><path d="M15.4 9.8l-1.3-4.5h-5.6l-1.3 4.5h8.2zm2.1 0h3l-2.4 8.2h-3l2.4-8.2zM3.5 9.8h3l-2.4 8.2h-3l2.4-8.2z"/></svg>',
-            myntra: '<svg viewBox="0 0 24 24" fill="#F13AB1" class="w-full h-full"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6H7v-2h2V7h2v10zm4 0h-2v-6h-2v-2h2V7h2v10z"/></svg>',
-            apple: '<i class="ph-fill ph-apple-logo text-slate-900 dark:text-white w-full h-full"></i>',
-            default: '<i class="ph-fill ph-shopping-bag text-brand-500 w-full h-full"></i>'
-        };
-
-        // UI Initialization
-        document.addEventListener('DOMContentLoaded', () => {
-            initTheme();
-            initRipple();
-            setupSkeleton();
-            updateBudgetDisplay();
-            initFirebaseModal();
-            
-            // Show FAB on scroll on mobile
-            window.addEventListener('scroll', () => {
-                const fab = document.getElementById('fab');
-                if (window.scrollY > 200) fab.classList.remove('translate-y-24');
-                else fab.classList.add('translate-y-24');
-            });
-
-            document.getElementById('fab').addEventListener('click', () => {
-                document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' });
-                document.getElementById('link').focus();
-            });
-
-            // Initialize connection with saved configuration if available
-            tryConnectSavedFirebase();
-        });
-
-        // Firebase Custom Connection Logic
-        function initFirebaseModal() {
-            const modal = document.getElementById('firebaseModal');
-            const openBtn = document.getElementById('firebaseConfigBtn');
-            const closeBtn = document.getElementById('closeFirebaseBtn');
-            const saveBtn = document.getElementById('saveFirebaseBtn');
-            const input = document.getElementById('firebaseConfigInput');
-
-            openBtn.addEventListener('click', () => {
-                const savedConfig = localStorage.getItem('wishlist_firebase_config');
-                if (savedConfig) input.value = savedConfig;
-                modal.classList.remove('opacity-0', 'pointer-events-none');
-                modal.children[0].classList.replace('scale-95', 'scale-100');
-            });
-
-            const closeModal = () => {
-                modal.classList.add('opacity-0', 'pointer-events-none');
-                modal.children[0].classList.replace('scale-100', 'scale-95');
-            };
-
-            closeBtn.addEventListener('click', closeModal);
-
-            saveBtn.addEventListener('click', async () => {
-                const configText = input.value.trim();
-                if (!configText) {
-                    // Clear config to switch back to local mode
-                    localStorage.removeItem('wishlist_firebase_config');
-                    showToast("Config cleared. Switching to Local Mode.", "info");
-                    closeModal();
-                    location.reload();
-                    return;
-                }
-
-                try {
-                    // Test if JSON is valid
-                    const parsed = JSON.parse(configText);
-                    if (!parsed.apiKey || !parsed.projectId) {
-                        throw new Error("Invalid Firebase Config structure");
-                    }
-                    localStorage.setItem('wishlist_firebase_config', configText);
-                    showToast("Configuration saved! Connecting...", "success");
-                    closeModal();
-                    setTimeout(() => location.reload(), 1000);
-                } catch (e) {
-                    showToast("Invalid JSON Configuration format!", "error");
-                }
-            });
-        }
-
-        async function tryConnectSavedFirebase() {
-    const savedConfig = localStorage.getItem('wishlist_firebase_config');
-    if (savedConfig) {
-        try {
-            const config = JSON.parse(savedConfig);
-            let app;
-            
-            // 🔥 গুরুত্বপূর্ণ ফিক্স: যদি অলরেডি [DEFAULT] অ্যাপ থেকে থাকে, তবে সেটি ব্যবহার করবে
-            if (getApps().length === 0) {
-                app = initializeApp(config);
-            } else {
-                // কোনো কারণে আগের কানেকশন আটকে থাকলে তা ডিলিট করে নতুন করে ইনিশিয়ালাইজ করবে
-                try {
-                    const existingApps = getApps();
-                    for (const existingApp of existingApps) {
-                        await deleteApp(existingApp);
-                    }
-                    app = initializeApp(config);
-                } catch (e) {
-                    // অথবা রানিং অ্যাপটি সরাসরি রিসিভ করবে
-                    app = getApps()[0];
-                }
-            }
-            
-            auth = getAuth(app);
-            db = getFirestore(app);
-            
-            // স্ট্যাটাস ইন্ডিকেটর আপডেট
-            const statusIndicator = document.getElementById('statusIndicator');
-            if (statusIndicator) {
-                statusIndicator.className = "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-brand-500/10 text-brand-500";
-                statusIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span> Firebase`;
-            }
-            
-            initAuthFlow();
-        } catch (e) {
-            console.error("Firebase connection error:", e);
-            showToast("Firebase Config error! Falling back to Local.", "error");
-            loadLocalMode();
-        }
-    } else {
-        loadLocalMode();
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Wishly — Premium Wishlist</title>
+<meta name="description" content="A beautiful premium wishlist app with budgets, priorities, and cloud sync." />
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'system-ui', 'sans-serif'],
+          display: ['Space Grotesk', 'Inter', 'sans-serif'],
+        },
+      }
     }
+  }
+</script>
+<style>
+  :root {
+    --bg: #f7f7fb;
+    --fg: #0a0a0f;
+    --muted: #6b7280;
+    --card: rgba(255,255,255,0.65);
+    --border: rgba(15,15,25,0.08);
+    --shadow: 0 10px 30px -12px rgba(15,15,35,0.15);
+    --accent: #6366f1;
+    --accent-2: #ec4899;
+    --accent-3: #06b6d4;
+  }
+  .dark {
+    --bg: #07070c;
+    --fg: #f5f5f7;
+    --muted: #9ca3af;
+    --card: rgba(20,20,28,0.55);
+    --border: rgba(255,255,255,0.08);
+    --shadow: 0 10px 40px -12px rgba(0,0,0,0.6);
+  }
+  html, body { background: var(--bg); color: var(--fg); }
+  body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+
+  /* Animated gradient background */
+  .bg-aurora {
+    position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
+  }
+  .bg-aurora::before, .bg-aurora::after {
+    content: ''; position: absolute; width: 60vmax; height: 60vmax; border-radius: 50%;
+    filter: blur(80px); opacity: .5; animation: float 22s ease-in-out infinite;
+  }
+  .bg-aurora::before {
+    background: radial-gradient(circle at 30% 30%, #6366f1, transparent 60%);
+    top: -20vmax; left: -10vmax;
+  }
+  .bg-aurora::after {
+    background: radial-gradient(circle at 70% 70%, #ec4899, transparent 60%);
+    bottom: -25vmax; right: -15vmax; animation-delay: -8s;
+  }
+  .bg-aurora .blob3 {
+    position: absolute; width: 45vmax; height: 45vmax; border-radius: 50%;
+    background: radial-gradient(circle, #06b6d4, transparent 60%);
+    filter: blur(90px); opacity: .35; top: 30%; left: 40%;
+    animation: float 30s ease-in-out infinite reverse;
+  }
+  @keyframes float {
+    0%,100% { transform: translate(0,0) scale(1); }
+    33% { transform: translate(8vmax,-6vmax) scale(1.1); }
+    66% { transform: translate(-6vmax,8vmax) scale(0.95); }
+  }
+
+  .glass {
+    background: var(--card);
+    backdrop-filter: blur(20px) saturate(150%);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+  .card-hover { transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+  .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 50px -18px rgba(99,102,241,.35); border-color: rgba(99,102,241,.4); }
+
+  .gradient-text {
+    background: linear-gradient(120deg, #6366f1, #ec4899, #06b6d4);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white; transition: transform .15s ease, box-shadow .2s ease, filter .2s;
+    box-shadow: 0 8px 20px -8px rgba(99,102,241,.6);
+  }
+  .btn-primary:hover { transform: translateY(-1px); filter: brightness(1.08); }
+  .btn-primary:active { transform: translateY(0) scale(.98); }
+
+  .ripple { position: relative; overflow: hidden; }
+  .ripple .r {
+    position: absolute; border-radius: 50%; transform: scale(0);
+    background: rgba(255,255,255,.5); animation: ripple .6s ease-out; pointer-events: none;
+  }
+  @keyframes ripple { to { transform: scale(4); opacity: 0; } }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #6366f1, #ec4899); border-radius: 10px; border: 2px solid transparent; background-clip: padding-box; }
+  ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #4f46e5, #db2777); background-clip: padding-box; border: 2px solid transparent; }
+
+  /* Skeleton */
+  .skeleton {
+    background: linear-gradient(90deg, rgba(120,120,140,.1), rgba(120,120,140,.25), rgba(120,120,140,.1));
+    background-size: 200% 100%; animation: shimmer 1.4s infinite;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  /* Toast */
+  .toast-enter { animation: toastIn .35s cubic-bezier(.2,.9,.3,1.2) both; }
+  .toast-exit { animation: toastOut .3s ease forwards; }
+  @keyframes toastIn { from { transform: translateY(20px) scale(.9); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+  @keyframes toastOut { to { transform: translateY(20px) scale(.9); opacity: 0; } }
+
+  /* Modal */
+  .modal-backdrop { animation: fade .2s ease both; }
+  .modal-panel { animation: pop .25s cubic-bezier(.2,.9,.3,1.2) both; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes pop { from { transform: scale(.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  /* Priority badges */
+  .pri-High { background: linear-gradient(135deg,#ef4444,#f97316); color: white; }
+  .pri-Medium { background: linear-gradient(135deg,#f59e0b,#fbbf24); color: #1a1a1a; }
+  .pri-Low { background: linear-gradient(135deg,#10b981,#22d3ee); color: white; }
+
+  .fab {
+    position: fixed; bottom: 24px; right: 24px; z-index: 40;
+    width: 60px; height: 60px; border-radius: 50%;
+    background: linear-gradient(135deg,#6366f1,#ec4899);
+    color: white; font-size: 24px;
+    box-shadow: 0 15px 35px -8px rgba(99,102,241,.6);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .2s ease;
+  }
+  .fab:hover { transform: scale(1.08) rotate(90deg); }
+
+  input, select, textarea {
+    background: rgba(255,255,255,.6);
+    border: 1px solid var(--border);
+    color: var(--fg);
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .dark input, .dark select, .dark textarea { background: rgba(255,255,255,.04); }
+  input:focus, select:focus, textarea:focus {
+    outline: none; border-color: #6366f1;
+    box-shadow: 0 0 0 4px rgba(99,102,241,.15);
+  }
+
+  .search-bar {
+    background: var(--card); backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    transition: border-color .2s, box-shadow .2s, transform .15s;
+  }
+  .search-bar:focus-within { border-color: #6366f1; box-shadow: 0 0 0 5px rgba(99,102,241,.15); }
+
+  .img-wrap { background: linear-gradient(135deg, rgba(99,102,241,.1), rgba(236,72,153,.1)); }
+  .fade-in { animation: fadeIn .4s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .counter { font-variant-numeric: tabular-nums; }
+
+  /* Confetti */
+  .confetti { position: fixed; width: 10px; height: 14px; top: -20px; z-index: 100; pointer-events: none; will-change: transform; }
+  @keyframes confettiFall { to { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+
+  details > summary { list-style: none; cursor: pointer; }
+  details > summary::-webkit-details-marker { display: none; }
+</style>
+</head>
+<body>
+
+<div class="bg-aurora"><div class="blob3"></div></div>
+
+<!-- Header -->
+<header class="sticky top-0 z-30 glass border-b border-white/10">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg" style="background:linear-gradient(135deg,#6366f1,#ec4899)">
+        <i class="fa-solid fa-star"></i>
+      </div>
+      <div>
+        <h1 class="font-display font-bold text-xl leading-tight">Wishly</h1>
+        <p class="text-xs opacity-60 -mt-0.5">Your dream board</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <div class="hidden md:flex items-center gap-1 text-xs px-3 py-1.5 rounded-full glass" title="Storage mode">
+        <span id="storage-dot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span id="storage-label">Local</span>
+      </div>
+      <button id="theme-btn" class="ripple w-10 h-10 rounded-xl glass flex items-center justify-center hover:scale-105 transition" title="Toggle theme (T)">
+        <i id="theme-icon" class="fa-solid fa-moon"></i>
+      </button>
+      <details class="relative">
+        <summary class="ripple w-10 h-10 rounded-xl glass flex items-center justify-center hover:scale-105 transition" title="Menu">
+          <i class="fa-solid fa-ellipsis-vertical"></i>
+        </summary>
+        <div class="absolute right-0 mt-2 w-56 glass rounded-xl p-2 z-40">
+          <button data-action="import" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 flex items-center gap-2"><i class="fa-solid fa-file-import w-5"></i> Import JSON</button>
+          <button data-action="export-json" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 flex items-center gap-2"><i class="fa-solid fa-file-export w-5"></i> Export JSON</button>
+          <button data-action="export-csv" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 flex items-center gap-2"><i class="fa-solid fa-file-csv w-5"></i> Export CSV</button>
+          <button data-action="firebase" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 flex items-center gap-2"><i class="fa-solid fa-cloud w-5"></i> Firebase Setup</button>
+          <button data-action="shortcuts" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 flex items-center gap-2"><i class="fa-solid fa-keyboard w-5"></i> Shortcuts</button>
+        </div>
+      </details>
+      <button id="add-btn" class="ripple btn-primary hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm">
+        <i class="fa-solid fa-plus"></i> Add Wish
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+
+  <!-- Hero + Dashboard -->
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="lg:col-span-3">
+      <h2 class="font-display text-3xl sm:text-5xl font-bold tracking-tight">Your <span class="gradient-text">wishlist</span>, beautifully organized.</h2>
+      <p class="opacity-70 mt-2 max-w-2xl">Track everything you want, set priorities, watch your budget, and never lose an idea again.</p>
+    </div>
+
+    <div class="glass rounded-2xl p-5 card-hover">
+      <div class="flex items-center justify-between">
+        <p class="text-sm opacity-60">Total Wishes</p>
+        <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:rgba(99,102,241,.15);color:#6366f1"><i class="fa-solid fa-list"></i></div>
+      </div>
+      <p id="stat-count" class="counter mt-2 text-4xl font-bold font-display">0</p>
+    </div>
+
+    <div class="glass rounded-2xl p-5 card-hover">
+      <div class="flex items-center justify-between">
+        <p class="text-sm opacity-60">Total Value</p>
+        <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:rgba(236,72,153,.15);color:#ec4899"><i class="fa-solid fa-sack-dollar"></i></div>
+      </div>
+      <p class="mt-2 text-4xl font-bold font-display"><span class="opacity-60 text-2xl align-top">₹</span><span id="stat-value" class="counter">0</span></p>
+    </div>
+
+    <div class="glass rounded-2xl p-5 card-hover">
+      <div class="flex items-center justify-between">
+        <p class="text-sm opacity-60">Budget</p>
+        <div class="flex items-center gap-1">
+          <input id="budget-input" type="number" min="0" placeholder="0" class="w-24 px-2 py-1 rounded-lg text-sm text-right" />
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:rgba(6,182,212,.15);color:#06b6d4"><i class="fa-solid fa-chart-line"></i></div>
+        </div>
+      </div>
+      <div class="mt-3 h-3 rounded-full overflow-hidden" style="background:rgba(120,120,140,.15)">
+        <div id="budget-bar" class="h-full rounded-full transition-all duration-700" style="width:0%;background:linear-gradient(90deg,#10b981,#06b6d4)"></div>
+      </div>
+      <p id="budget-label" class="text-xs opacity-70 mt-2">Set a budget to track progress</p>
+    </div>
+  </section>
+
+  <!-- Toolbar -->
+  <section class="glass rounded-2xl p-3 sm:p-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+    <div class="search-bar flex items-center gap-2 px-4 py-2.5 rounded-xl flex-1">
+      <i class="fa-solid fa-magnifying-glass opacity-60"></i>
+      <input id="search" type="search" placeholder="Search wishes... (press /)" class="flex-1 bg-transparent border-0 focus:ring-0 focus:shadow-none focus:border-transparent p-0" style="box-shadow:none;border:0" />
+      <kbd class="hidden sm:inline text-xs opacity-50 px-1.5 py-0.5 rounded border border-current">/</kbd>
+    </div>
+    <select id="sort" class="px-4 py-2.5 rounded-xl text-sm">
+      <option value="newest">Newest first</option>
+      <option value="oldest">Oldest first</option>
+      <option value="price-desc">Price: high → low</option>
+      <option value="price-asc">Price: low → high</option>
+      <option value="priority">Priority</option>
+    </select>
+  </section>
+
+  <!-- Grid -->
+  <section id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></section>
+
+  <!-- Empty state -->
+  <section id="empty" class="hidden text-center py-20">
+    <div class="mx-auto w-24 h-24 rounded-3xl glass flex items-center justify-center mb-6 text-4xl gradient-text">
+      <i class="fa-regular fa-star"></i>
+    </div>
+    <h3 class="text-2xl font-display font-bold">Your wishlist is empty</h3>
+    <p class="opacity-70 mt-2">Add your first wish to get started.</p>
+    <button id="empty-add" class="ripple btn-primary mt-6 px-6 py-3 rounded-xl font-semibold inline-flex items-center gap-2">
+      <i class="fa-solid fa-plus"></i> Add your first wish
+    </button>
+  </section>
+</main>
+
+<!-- FAB -->
+<button id="fab" class="fab ripple sm:hidden" title="Add wish"><i class="fa-solid fa-plus"></i></button>
+
+<!-- Product modal -->
+<div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="modal-backdrop absolute inset-0 bg-black/50 backdrop-blur-sm" data-close></div>
+  <div class="modal-panel relative w-full max-w-lg glass rounded-2xl p-6 max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between mb-4">
+      <h3 id="modal-title" class="text-xl font-display font-bold">Add Wish</h3>
+      <button data-close class="w-9 h-9 rounded-lg hover:bg-white/10"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="product-form" class="space-y-3">
+      <input type="hidden" name="id" />
+      <div>
+        <label class="text-xs font-semibold opacity-70">Name *</label>
+        <input name="name" required maxlength="120" class="w-full mt-1 px-3 py-2.5 rounded-xl" placeholder="AirPods Pro" />
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs font-semibold opacity-70">Price</label>
+          <input name="price" type="number" min="0" step="0.01" class="w-full mt-1 px-3 py-2.5 rounded-xl" placeholder="0.00" />
+        </div>
+        <div>
+          <label class="text-xs font-semibold opacity-70">Priority</label>
+          <select name="priority" class="w-full mt-1 px-3 py-2.5 rounded-xl">
+            <option>Medium</option><option>High</option><option>Low</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="text-xs font-semibold opacity-70">Product link</label>
+        <input name="url" type="text" class="w-full mt-1 px-3 py-2.5 rounded-xl" placeholder="example.com/item" />
+      </div>
+      <div>
+        <label class="text-xs font-semibold opacity-70">Image URL</label>
+        <input name="image" type="url" class="w-full mt-1 px-3 py-2.5 rounded-xl" placeholder="https://.../image.jpg" />
+      </div>
+      <div>
+        <label class="text-xs font-semibold opacity-70">Notes</label>
+        <textarea name="notes" rows="3" class="w-full mt-1 px-3 py-2.5 rounded-xl resize-none" placeholder="Color, size, why you want it..."></textarea>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button type="button" data-close class="px-4 py-2.5 rounded-xl hover:bg-white/10 font-semibold text-sm">Cancel</button>
+        <button type="submit" class="ripple btn-primary px-5 py-2.5 rounded-xl font-semibold text-sm">Save Wish</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Confirm modal -->
+<div id="confirm" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="modal-backdrop absolute inset-0 bg-black/50 backdrop-blur-sm" data-close></div>
+  <div class="modal-panel relative w-full max-w-sm glass rounded-2xl p-6 text-center">
+    <div class="mx-auto w-14 h-14 rounded-full flex items-center justify-center mb-3" style="background:rgba(239,68,68,.15);color:#ef4444"><i class="fa-solid fa-trash text-xl"></i></div>
+    <h3 class="text-lg font-display font-bold">Delete this wish?</h3>
+    <p class="opacity-70 text-sm mt-1">This action cannot be undone.</p>
+    <div class="mt-5 flex gap-2">
+      <button data-close class="flex-1 px-4 py-2.5 rounded-xl hover:bg-white/10 font-semibold text-sm">Cancel</button>
+      <button id="confirm-yes" class="ripple flex-1 px-4 py-2.5 rounded-xl font-semibold text-sm text-white" style="background:linear-gradient(135deg,#ef4444,#f97316)">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase modal -->
+<div id="firebase-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="modal-backdrop absolute inset-0 bg-black/50 backdrop-blur-sm" data-close></div>
+  <div class="modal-panel relative w-full max-w-lg glass rounded-2xl p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-xl font-display font-bold"><i class="fa-solid fa-cloud mr-2"></i>Firebase (optional)</h3>
+      <button data-close class="w-9 h-9 rounded-lg hover:bg-white/10"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <p class="text-sm opacity-70 mb-3">Paste your Firebase web config to sync to Firestore. Leave empty to use local storage.</p>
+    <textarea id="fb-config" rows="8" class="w-full px-3 py-2.5 rounded-xl font-mono text-xs" placeholder='{"apiKey":"...","authDomain":"...","projectId":"..."}'></textarea>
+    <div class="mt-4 flex gap-2 justify-end">
+      <button id="fb-disconnect" class="px-4 py-2.5 rounded-xl hover:bg-white/10 font-semibold text-sm">Disconnect</button>
+      <button id="fb-connect" class="ripple btn-primary px-5 py-2.5 rounded-xl font-semibold text-sm">Connect</button>
+    </div>
+  </div>
+</div>
+
+<!-- Shortcuts modal -->
+<div id="shortcuts-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="modal-backdrop absolute inset-0 bg-black/50 backdrop-blur-sm" data-close></div>
+  <div class="modal-panel relative w-full max-w-md glass rounded-2xl p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-xl font-display font-bold">Keyboard Shortcuts</h3>
+      <button data-close class="w-9 h-9 rounded-lg hover:bg-white/10"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <ul class="space-y-2 text-sm">
+      <li class="flex justify-between p-2 rounded-lg hover:bg-white/5"><span>New wish</span><kbd class="px-2 py-0.5 rounded border border-current opacity-70">N</kbd></li>
+      <li class="flex justify-between p-2 rounded-lg hover:bg-white/5"><span>Focus search</span><kbd class="px-2 py-0.5 rounded border border-current opacity-70">/</kbd></li>
+      <li class="flex justify-between p-2 rounded-lg hover:bg-white/5"><span>Toggle theme</span><kbd class="px-2 py-0.5 rounded border border-current opacity-70">T</kbd></li>
+      <li class="flex justify-between p-2 rounded-lg hover:bg-white/5"><span>Close modal</span><kbd class="px-2 py-0.5 rounded border border-current opacity-70">Esc</kbd></li>
+    </ul>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toasts" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2"></div>
+
+<!-- Hidden import input -->
+<input id="import-file" type="file" accept="application/json" class="hidden" />
+
+<script type="module">
+/* ============================================================
+   Wishly — Premium Wishlist App
+   Vanilla ES2024, single-file, no build tools.
+   ============================================================ */
+
+// ---------- Constants ----------
+const LS_ITEMS  = 'wishly.items.v1';
+const LS_BUDGET = 'wishly.budget.v1';
+const LS_THEME  = 'wishly.theme.v1';
+const LS_FB     = 'wishly.firebase.v1';
+
+// ---------- Tiny helpers ----------
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const uid = () => crypto.randomUUID?.() ?? (Date.now().toString(36) + Math.random().toString(36).slice(2));
+const fmt$ = n => (Number(n)||0).toLocaleString(undefined, {maximumFractionDigits: 2});
+const debounce = (fn, ms=200) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// ---------- Helper to ensure absolute URL ----------
+function ensureAbsoluteUrl(url) {
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return 'https://' + trimmed;
 }
 
-        function loadLocalMode() {
-            document.getElementById('statusIndicator').className = "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-500";
-            document.getElementById('statusIndicator').innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> Local`;
-            
-            // Load items from local storage if local mode is active
-            const localData = localStorage.getItem('wishlist_local_items');
-            if (localData) {
-                products = JSON.parse(localData);
-            } else {
-                products = [];
-            }
-            document.getElementById('loader').classList.add('hidden-safely');
-            renderProducts();
-        }
+// ---------- Website detection ----------
+const SITES = [
+  {re:/amazon\./i,        name:'Amazon',    icon:'fa-brands fa-amazon',  color:'#ff9900'},
+  {re:/ebay\./i,          name:'eBay',      icon:'fa-brands fa-ebay',    color:'#e53238'},
+  {re:/etsy\./i,          name:'Etsy',      icon:'fa-brands fa-etsy',    color:'#f16521'},
+  {re:/apple\./i,         name:'Apple',     icon:'fa-brands fa-apple',   color:'#a2aaad'},
+  {re:/nike\./i,          name:'Nike',      icon:'fa-solid fa-shoe-prints', color:'#111'},
+  {re:/aliexpress\./i,    name:'AliExpress',icon:'fa-solid fa-cart-shopping', color:'#e62e04'},
+  {re:/shopify\./i,       name:'Shopify',   icon:'fa-brands fa-shopify', color:'#95bf47'},
+  {re:/walmart\./i,       name:'Walmart',   icon:'fa-solid fa-store',    color:'#0071dc'},
+  {re:/target\./i,        name:'Target',    icon:'fa-solid fa-bullseye', color:'#cc0000'},
+  {re:/ikea\./i,          name:'IKEA',      icon:'fa-solid fa-couch',    color:'#0058a3'},
+  {re:/bestbuy\./i,       name:'Best Buy',  icon:'fa-solid fa-plug',     color:'#0046be'},
+  {re:/youtube\./i,       name:'YouTube',   icon:'fa-brands fa-youtube', color:'#ff0000'},
+  {re:/github\./i,        name:'GitHub',    icon:'fa-brands fa-github',  color:'#333'},
+];
+function detectSite(url) {
+  if (!url) return null;
+  try {
+    const absUrl = ensureAbsoluteUrl(url);
+    const host = new URL(absUrl).hostname.replace(/^www\./,'');
+    const match = SITES.find(s => s.re.test(host));
+    if (match) return match;
+    return { name: host, icon: 'fa-solid fa-globe', color: '#6366f1' };
+  } catch { return null; }
+}
 
-        // Theme Logic
-        function initTheme() {
-            const html = document.documentElement;
-            const btn = document.getElementById('themeToggle');
-            const savedTheme = localStorage.getItem('theme');
-            const sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            
-            if (savedTheme === 'dark' || (!savedTheme && sysDark)) html.classList.add('dark');
-            else html.classList.remove('dark');
+// ---------- Store (localStorage <-> Firestore) ----------
+const store = {
+  mode: 'local', // 'local' | 'firebase'
+  fbUnsub: null, fbApp: null, fbDb: null,
+  items: [], budget: 0,
 
-            btn.addEventListener('click', () => {
-                html.classList.toggle('dark');
-                localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
-            });
-        }
+  async init() {
+    this.items  = JSON.parse(localStorage.getItem(LS_ITEMS)  || '[]');
+    this.budget = Number(localStorage.getItem(LS_BUDGET)     || 0);
+    const cfg = localStorage.getItem(LS_FB);
+    if (cfg) { try { await this.connectFirebase(JSON.parse(cfg), true); } catch(e){ console.warn(e); } }
+  },
 
-        // Ripple Effect logic
-        function initRipple() {
-            document.addEventListener('click', function(e) {
-                const target = e.target.closest('.ripple-btn');
-                if (!target) return;
-                
-                const circle = document.createElement('span');
-                const diameter = Math.max(target.clientWidth, target.clientHeight);
-                const radius = diameter / 2;
-                const rect = target.getBoundingClientRect();
-                
-                circle.style.width = circle.style.height = `${diameter}px`;
-                circle.style.left = `${e.clientX - rect.left - radius}px`;
-                circle.style.top = `${e.clientY - rect.top - radius}px`;
-                circle.classList.add('ripple');
-                
-                const existing = target.querySelector('.ripple');
-                if (existing) existing.remove();
-                
-                target.appendChild(circle);
-                setTimeout(() => circle.remove(), 600);
-            });
-        }
+  persistLocal() { localStorage.setItem(LS_ITEMS, JSON.stringify(this.items)); },
+  setBudget(v)  { this.budget = Number(v)||0; localStorage.setItem(LS_BUDGET, String(this.budget)); render(); },
 
-        // Authentication Setup
-        async function initAuthFlow() {
-            try {
-                await signInAnonymously(auth);
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        currentUserId = user.uid;
-                        fetchProducts();
-                    } else {
-                        currentUserId = null;
-                        products = [];
-                        renderProducts();
-                        if (unsubscribeSnapshot) unsubscribeSnapshot();
-                    }
-                });
-            } catch (error) {
-                console.error("Auth error:", error);
-                showToast("Authentication failed. Using Local Mode.", "error");
-                loadLocalMode();
-            }
-        }
+  async add(item) {
+    item.id ||= uid();
+    item.createdAt ||= Date.now();
+    item.updatedAt = Date.now();
+    if (this.mode === 'firebase') {
+      const { doc, setDoc } = this.fb;
+      await setDoc(doc(this.fbDb, 'wishly', item.id), item);
+    } else {
+      this.items.unshift(item); this.persistLocal(); render();
+    }
+  },
+  async update(item) {
+    item.updatedAt = Date.now();
+    if (this.mode === 'firebase') {
+      const { doc, setDoc } = this.fb;
+      await setDoc(doc(this.fbDb, 'wishly', item.id), item);
+    } else {
+      const i = this.items.findIndex(x => x.id === item.id);
+      if (i>=0) this.items[i] = item; this.persistLocal(); render();
+    }
+  },
+  async remove(id) {
+    if (this.mode === 'firebase') {
+      const { doc, deleteDoc } = this.fb;
+      await deleteDoc(doc(this.fbDb, 'wishly', id));
+    } else {
+      this.items = this.items.filter(x => x.id !== id); this.persistLocal(); render();
+    }
+  },
+  async replaceAll(items) {
+    if (this.mode === 'firebase') {
+      const { doc, setDoc } = this.fb;
+      await Promise.all(items.map(it => { it.id ||= uid(); return setDoc(doc(this.fbDb,'wishly',it.id), it); }));
+    } else {
+      this.items = items; this.persistLocal(); render();
+    }
+  },
 
-        // Fetch Firestore Database Realtime data
-        function fetchProducts() {
-            if (!currentUserId || !db) return;
-            const productsRef = collection(db, 'artifacts', appId, 'users', currentUserId, 'wishlist_items');
-            
-            document.getElementById('loader').classList.remove('hidden-safely');
-            document.getElementById('productGrid').innerHTML = '';
-            document.getElementById('emptyState').classList.add('hidden-safely');
+  async connectFirebase(config, silent=false) {
+    const app = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+    const fs  = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+    this.fbApp = app.initializeApp(config, 'wishly-' + Date.now());
+    this.fbDb  = fs.getFirestore(this.fbApp);
+    this.fb    = fs;
+    this.mode  = 'firebase';
+    localStorage.setItem(LS_FB, JSON.stringify(config));
+    // subscribe
+    const { collection, onSnapshot } = fs;
+    this.fbUnsub?.();
+    this.fbUnsub = onSnapshot(collection(this.fbDb, 'wishly'), snap => {
+      this.items = snap.docs.map(d => d.data());
+      render();
+    }, err => { console.error(err); toast('Firestore error, falling back to local', 'error'); this.disconnectFirebase(); });
+    setStorageBadge('Firebase', '#f59e0b');
+    if (!silent) toast('Connected to Firebase ✓', 'success');
+  },
+  disconnectFirebase() {
+    this.fbUnsub?.(); this.fbUnsub = null;
+    this.mode = 'local';
+    localStorage.removeItem(LS_FB);
+    setStorageBadge('Local', '#10b981');
+    this.items = JSON.parse(localStorage.getItem(LS_ITEMS) || '[]');
+    render();
+  },
+};
 
-            unsubscribeSnapshot = onSnapshot(productsRef, (snapshot) => {
-                products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                document.getElementById('loader').classList.add('hidden-safely');
-                renderProducts();
-            }, (error) => {
-                console.error("Snapshot error:", error);
-                showToast("Failed to sync with cloud.", "error");
-                document.getElementById('loader').classList.add('hidden-safely');
-                loadLocalMode();
-            });
-        }
+function setStorageBadge(label, color) {
+  $('#storage-label').textContent = label;
+  $('#storage-dot').style.background = color;
+}
 
-        // Helpers
-        const formatPrice = (price) => new Intl.NumberFormat('en-IN').format(price);
-        const timeAgo = (ts) => {
-            if(!ts) return 'Just now';
-            const diff = (Date.now() - ts) / 1000;
-            if(diff < 60) return 'Just now';
-            if(diff < 3600) return `${Math.floor(diff/60)}m ago`;
-            if(diff < 86400) return `${Math.floor(diff/3600)}h ago`;
-            return new Date(ts).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
-        };
+// ---------- Theme ----------
+const themes = ['system','light','dark'];
+const themeIcons = { system: 'fa-desktop', light: 'fa-sun', dark: 'fa-moon' };
+function applyTheme(mode) {
+  const dark = mode === 'dark' || (mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.classList.toggle('dark', dark);
+  $('#theme-icon').className = 'fa-solid ' + themeIcons[mode];
+}
+function cycleTheme() {
+  const cur = localStorage.getItem(LS_THEME) || 'system';
+  const next = themes[(themes.indexOf(cur)+1) % themes.length];
+  localStorage.setItem(LS_THEME, next);
+  applyTheme(next);
+  toast(`Theme: ${next}`, 'info');
+}
+applyTheme(localStorage.getItem(LS_THEME) || 'system');
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if ((localStorage.getItem(LS_THEME)||'system') === 'system') applyTheme('system');
+});
 
-        const getPriorityStyle = (p) => {
-            return p === 'High' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
-                   p === 'Medium' ? 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-500 border-yellow-500/20' :
-                   'bg-green-500/10 text-green-500 border-green-500/20';
-        };
+// ---------- Toasts ----------
+function toast(msg, kind='info') {
+  const colors = {
+    success: 'linear-gradient(135deg,#10b981,#22d3ee)',
+    error:   'linear-gradient(135deg,#ef4444,#f97316)',
+    info:    'linear-gradient(135deg,#6366f1,#8b5cf6)',
+  };
+  const icons = { success:'fa-circle-check', error:'fa-triangle-exclamation', info:'fa-circle-info' };
+  const el = document.createElement('div');
+  el.className = 'toast-enter glass rounded-xl px-4 py-3 flex items-center gap-3 min-w-[240px] shadow-2xl';
+  el.innerHTML = `<span class="w-8 h-8 rounded-lg flex items-center justify-center text-white" style="background:${colors[kind]}"><i class="fa-solid ${icons[kind]}"></i></span><span class="text-sm font-medium">${escapeHtml(msg)}</span>`;
+  $('#toasts').appendChild(el);
+  setTimeout(() => { el.classList.remove('toast-enter'); el.classList.add('toast-exit'); setTimeout(() => el.remove(), 300); }, 2600);
+}
 
-        const detectWebsite = (url) => {
-            try {
-                const host = new URL(url).hostname.toLowerCase();
-                const sites = ['amazon', 'flipkart', 'myntra', 'meesho', 'ajio', 'nykaa', 'croma', 'tatacliq', 'apple'];
-                for(let s of sites) if (host.includes(s)) return s.charAt(0).toUpperCase() + s.slice(1);
-                return host.replace('www.', '').split('.')[0];
-            } catch { return 'Web Store'; }
-        };
+// ---------- Confetti ----------
+function confetti() {
+  const colors = ['#6366f1','#ec4899','#06b6d4','#f59e0b','#10b981'];
+  for (let i=0;i<80;i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random()*100 + 'vw';
+    c.style.background = colors[i%colors.length];
+    c.style.transform = `rotate(${Math.random()*360}deg)`;
+    c.style.animation = `confettiFall ${1.5 + Math.random()*1.5}s ${Math.random()*0.3}s ease-out forwards`;
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3500);
+  }
+}
 
-        const getBrandIcon = (site) => brandLogos[site.toLowerCase()] || brandLogos['default'];
+// ---------- Counter animation ----------
+function animateCounter(el, to, dur=700) {
+  const from = Number(el.dataset.v || 0);
+  const start = performance.now();
+  const step = t => {
+    const p = Math.min((t-start)/dur, 1);
+    const eased = 1 - Math.pow(1-p, 3);
+    el.textContent = fmt$(Math.round((from + (to-from)*eased) * 100) / 100);
+    if (p<1) requestAnimationFrame(step); else el.dataset.v = to;
+  };
+  requestAnimationFrame(step);
+}
 
-        // Animated Counters
-        function animateValue(el, endValue) {
-            let start = parseInt(el.dataset.val || 0) || 0;
-            if (start === endValue) return;
-            el.dataset.val = endValue;
-            
-            let duration = 800, startTime = null;
-            const step = (ts) => {
-                if(!startTime) startTime = ts;
-                let progress = Math.min((ts - startTime) / duration, 1);
-                let current = Math.floor(progress * (endValue - start) + start);
-                el.innerText = formatPrice(current);
-                if (progress < 1) requestAnimationFrame(step);
-                else el.innerText = formatPrice(endValue);
-            };
-            requestAnimationFrame(step);
-        }
+// ---------- Render ----------
+const state = { search:'', sort:'newest' };
 
-        // Budget Logic
-        window.toggleBudgetInput = () => {
-            const c = document.getElementById('budgetInputContainer');
-            c.classList.toggle('hidden-safely');
-            if(!c.classList.contains('hidden-safely')) {
-                document.getElementById('budgetInput').value = currentBudget;
-                document.getElementById('budgetInput').focus();
-            }
-        };
-        window.saveBudget = () => {
-            const val = parseInt(document.getElementById('budgetInput').value);
-            if(val > 0) {
-                currentBudget = val;
-                localStorage.setItem('wishlist_budget', val);
-                updateBudgetDisplay();
-                document.getElementById('budgetInputContainer').classList.add('hidden-safely');
-            }
-        };
+function filtered() {
+  const q = state.search.trim().toLowerCase();
+  let arr = store.items.filter(x =>
+    !q || [x.name, x.notes, x.url].some(v => (v||'').toLowerCase().includes(q))
+  );
+  const priRank = { High: 0, Medium: 1, Low: 2 };
+  switch (state.sort) {
+    case 'oldest':      arr.sort((a,b)=>(a.createdAt||0)-(b.createdAt||0)); break;
+    case 'price-desc':  arr.sort((a,b)=>(Number(b.price)||0)-(Number(a.price)||0)); break;
+    case 'price-asc':   arr.sort((a,b)=>(Number(a.price)||0)-(Number(b.price)||0)); break;
+    case 'priority':    arr.sort((a,b)=>(priRank[a.priority]??3)-(priRank[b.priority]??3)); break;
+    default:            arr.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  }
+  return arr;
+}
 
-        function updateBudgetDisplay() {
-            document.getElementById('budgetDisplay').innerText = `₹${formatPrice(currentBudget)}`;
-            renderStats(); // trigger re-render of bar
-        }
+function cardHTML(it) {
+  const absoluteUrl = ensureAbsoluteUrl(it.url);
+  const site = detectSite(it.url);
+  const img = it.image ? `<img src="${escapeHtml(it.image)}" alt="${escapeHtml(it.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" class="w-full h-full object-cover" />` : '';
+  return `
+  <article class="fade-in glass rounded-2xl overflow-hidden card-hover flex flex-col" data-id="${it.id}">
+    <div class="img-wrap aspect-video relative">
+      ${img}
+      <div class="absolute inset-0 flex items-center justify-center text-4xl opacity-40" style="${it.image?'display:none':''}">
+        <i class="fa-regular fa-image"></i>
+      </div>
+      <span class="absolute top-2 left-2 text-xs font-semibold px-2.5 py-1 rounded-full pri-${it.priority||'Medium'} shadow">
+        <i class="fa-solid fa-flag mr-1"></i>${it.priority||'Medium'}
+      </span>
+      ${site ? `<span class="absolute top-2 right-2 text-xs font-semibold px-2.5 py-1 rounded-full glass flex items-center gap-1.5"><i class="${site.icon}" style="color:${site.color}"></i>${escapeHtml(site.name)}</span>` : ''}
+    </div>
+    <div class="p-4 flex-1 flex flex-col">
+      <div class="flex items-start justify-between gap-2">
+        <h3 class="font-display font-bold text-lg leading-tight line-clamp-2">${escapeHtml(it.name)}</h3>
+        <span class="text-lg font-bold gradient-text whitespace-nowrap">₹${fmt$(it.price)}</span>
+      </div>
+      ${it.notes ? `<p class="text-sm opacity-70 mt-2 line-clamp-2">${escapeHtml(it.notes)}</p>` : ''}
+      <div class="mt-auto pt-3 flex items-center gap-1.5">
+        ${it.url ? `<a href="${escapeHtml(absoluteUrl)}" target="_blank" rel="noopener" class="flex-1 text-center px-3 py-2 rounded-lg text-sm font-semibold hover:bg-white/10 border border-white/10 transition"><i class="fa-solid fa-arrow-up-right-from-square mr-1"></i>Visit</a>` : ''}
+        <button data-edit="${it.id}" title="Edit" class="w-9 h-9 rounded-lg hover:bg-white/10 border border-white/10"><i class="fa-solid fa-pen"></i></button>
+        <button data-del="${it.id}"  title="Delete" class="w-9 h-9 rounded-lg hover:bg-red-500/10 hover:text-red-500 border border-white/10"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>
+  </article>`;
+}
 
-        function renderStats() {
-            const total = products.reduce((acc, p) => acc + (Number(p.price) || 0), 0);
-            animateValue(document.getElementById('totalCount'), products.length);
-            animateValue(document.getElementById('totalCost'), total);
+function render() {
+  const grid = $('#grid'), empty = $('#empty');
+  const items = filtered();
+  grid.innerHTML = items.map(cardHTML).join('');
+  empty.classList.toggle('hidden', items.length > 0 || store.items.length === 0 && !state.search);
+  if (store.items.length === 0) empty.classList.remove('hidden');
 
-            const bar = document.getElementById('budgetBar');
-            const pct = Math.min((total / currentBudget) * 100, 100);
-            bar.style.width = `${pct}%`;
-            
-            if (pct >= 100) {
-                bar.classList.replace('from-brand-400', 'from-red-500');
-                bar.classList.replace('to-brand-600', 'to-red-600');
-                document.getElementById('budgetWarning').classList.remove('hidden-safely');
-            } else {
-                bar.classList.replace('from-red-500', 'from-brand-400');
-                bar.classList.replace('to-red-600', 'to-brand-600');
-                document.getElementById('budgetWarning').classList.add('hidden-safely');
-            }
-        }
+  // stats
+  const total = store.items.length;
+  const value = store.items.reduce((s,x)=>s+(Number(x.price)||0), 0);
+  animateCounter($('#stat-count'), total);
+  animateCounter($('#stat-value'), value);
 
-        // Generate Skeletons
-        function setupSkeleton() {
-            const grid = document.getElementById('loader');
-            grid.innerHTML = Array(4).fill(0).map(() => `
-                <div class="glass p-4 rounded-2xl animate-pulse">
-                    <div class="h-40 bg-slate-200 dark:bg-slate-700/50 rounded-xl mb-4"></div>
-                    <div class="h-6 w-3/4 bg-slate-200 dark:bg-slate-700/50 rounded mb-2"></div>
-                    <div class="h-4 w-1/2 bg-slate-200 dark:bg-slate-700/50 rounded mb-4"></div>
-                    <div class="flex justify-between items-center"><div class="h-8 w-24 bg-slate-200 dark:bg-slate-700/50 rounded"></div></div>
-                </div>
-            `).join('');
-        }
+  // budget
+  const budget = store.budget;
+  $('#budget-input').value = budget || '';
+  const pct = budget > 0 ? Math.min(100, (value/budget)*100) : 0;
+  const bar = $('#budget-bar');
+  bar.style.width = pct + '%';
+  bar.style.background = pct < 70 ? 'linear-gradient(90deg,#10b981,#06b6d4)'
+                     : pct < 100 ? 'linear-gradient(90deg,#f59e0b,#fbbf24)'
+                                 : 'linear-gradient(90deg,#ef4444,#f97316)';
+  $('#budget-label').textContent = budget > 0
+    ? `₹${fmt$(value)} of ₹${fmt$(budget)} (${pct.toFixed(0)}%)`
+    : 'Set a budget to track progress';
+}
 
-        // Render Product List
-        function renderProducts() {
-            const grid = document.getElementById('productGrid');
-            const empty = document.getElementById('emptyState');
-            const q = document.getElementById('searchInput').value.toLowerCase();
-            const sort = document.getElementById('sortSelect').value;
+function skeletonGrid(n=6) {
+  $('#grid').innerHTML = Array.from({length:n}).map(() => `
+    <div class="glass rounded-2xl overflow-hidden">
+      <div class="skeleton aspect-video"></div>
+      <div class="p-4 space-y-2">
+        <div class="skeleton h-5 w-3/4 rounded"></div>
+        <div class="skeleton h-4 w-1/2 rounded"></div>
+        <div class="skeleton h-8 w-full rounded mt-4"></div>
+      </div>
+    </div>`).join('');
+}
 
-            renderStats();
+// ---------- Modals ----------
+function openModal(sel) { $(sel).classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
+function closeModal(sel) { $(sel).classList.add('hidden'); document.body.style.overflow = ''; }
+document.addEventListener('click', e => {
+  if (e.target.matches('[data-close]')) {
+    const m = e.target.closest('.fixed'); if (m) closeModal('#'+m.id);
+  }
+});
 
-            let filtered = products.filter(p => 
-                (p.name?.toLowerCase().includes(q)) || 
-                (p.website?.toLowerCase().includes(q)) ||
-                (p.notes?.toLowerCase().includes(q))
-            );
+let editingId = null;
+function openForm(item=null) {
+  editingId = item?.id ?? null;
+  $('#modal-title').textContent = item ? 'Edit Wish' : 'Add Wish';
+  const f = $('#product-form');
+  f.reset();
+  if (item) {
+    f.id.value = item.id;
+    f.name.value = item.name || '';
+    f.price.value = item.price ?? '';
+    f.priority.value = item.priority || 'Medium';
+    f.url.value = item.url || '';
+    f.image.value = item.image || '';
+    f.notes.value = item.notes || '';
+  }
+  openModal('#modal');
+  setTimeout(() => f.name.focus(), 50);
+}
 
-            // Memory sorting
-            const prioVal = { 'High': 3, 'Medium': 2, 'Low': 1 };
-            filtered.sort((a, b) => {
-                if (sort === 'priceDesc') return b.price - a.price;
-                if (sort === 'priceAsc') return a.price - b.price;
-                if (sort === 'dateAsc') return (a.createdAt || 0) - (b.createdAt || 0);
-                if (sort === 'priority') return prioVal[b.priority] - prioVal[a.priority];
-                return (b.createdAt || 0) - (a.createdAt || 0);
-            });
+$('#product-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const data = Object.fromEntries(fd.entries());
+  data.price = Number(data.price) || 0;
+  const isNew = !editingId;
+  const existing = isNew ? null : store.items.find(x => x.id === editingId);
+  const item = { ...(existing || {}), ...data, id: editingId || uid() };
+  try {
+    if (isNew) { await store.add(item); toast('Wish added ✨','success'); confetti(); }
+    else      { await store.update(item); toast('Wish updated','success'); }
+    closeModal('#modal');
+  } catch (err) { console.error(err); toast('Save failed', 'error'); }
+});
 
-            grid.innerHTML = '';
-            
-            if (!filtered.length) {
-                empty.classList.remove('hidden-safely');
-                return;
-            }
-            
-            empty.classList.add('hidden-safely');
+// ---------- Delete flow ----------
+let pendingDelete = null;
+$('#confirm-yes').addEventListener('click', async () => {
+  if (!pendingDelete) return;
+  try { await store.remove(pendingDelete); toast('Wish deleted','success'); }
+  catch { toast('Delete failed','error'); }
+  pendingDelete = null; closeModal('#confirm');
+});
 
-            filtered.forEach((p, i) => {
-                const card = document.createElement('div');
-                card.className = "glass p-4 rounded-2xl flex flex-col group hover:-translate-y-1 transition-transform duration-300 relative overflow-hidden animate-scale-in";
-                card.style.animationDelay = `${i * 0.05}s`;
-                
-                // Fallback image logic
-                const imgUrl = p.imageUrl || `https://ui-avatars.com/api/?name=${p.website || 'Store'}&background=random&size=400&font-size=0.33`;
+// ---------- Grid event delegation ----------
+$('#grid').addEventListener('click', e => {
+  const editBtn = e.target.closest('[data-edit]');
+  const delBtn  = e.target.closest('[data-del]');
+  if (editBtn) { const it = store.items.find(x=>x.id===editBtn.dataset.edit); if (it) openForm(it); }
+  if (delBtn)  { pendingDelete = delBtn.dataset.del; openModal('#confirm'); }
+});
 
-                card.innerHTML = `
-                    <div class="relative h-48 rounded-xl overflow-hidden mb-4 bg-slate-100 dark:bg-slate-800">
-                        <img src="${imgUrl}" alt="${p.name}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onerror="this.src='https://ui-avatars.com/api/?name=${p.website}&background=random'">
-                        
-                        <div class="absolute top-3 left-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 shadow-sm">
-                            <div class="w-4 h-4 flex items-center justify-center">${getBrandIcon(p.website)}</div>
-                            <span class="text-slate-800 dark:text-slate-200 capitalize">${p.website}</span>
-                        </div>
-                        
-                        <div class="absolute top-3 right-3 px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border backdrop-blur-md ${getPriorityStyle(p.priority)}">
-                            ${p.priority}
-                        </div>
+// ---------- Toolbar ----------
+$('#search').addEventListener('input', debounce(e => { state.search = e.target.value; render(); }, 120));
+$('#sort').addEventListener('change', e => { state.sort = e.target.value; render(); });
+$('#budget-input').addEventListener('change', e => store.setBudget(e.target.value));
 
-                        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                            <button onclick="editProduct('${p.id}')" class="w-10 h-10 rounded-full bg-white text-blue-500 flex items-center justify-center hover:scale-110 transition-transform shadow-lg ripple-btn" title="Edit">
-                                <i class="ph-bold ph-pencil-simple text-lg"></i>
-                            </button>
-                            <button onclick="triggerDelete('${p.id}')" class="w-10 h-10 rounded-full bg-white text-red-500 flex items-center justify-center hover:scale-110 transition-transform shadow-lg ripple-btn" title="Delete">
-                                <i class="ph-bold ph-trash text-lg"></i>
-                            </button>
-                            <a href="${p.link}" target="_blank" class="w-10 h-10 rounded-full bg-brand-500 text-white flex items-center justify-center hover:scale-110 transition-transform shadow-lg ripple-btn" title="Visit">
-                                <i class="ph-bold ph-arrow-up-right text-lg"></i>
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <div class="flex-1 flex flex-col">
-                        <h3 class="font-semibold text-slate-900 dark:text-white text-sm sm:text-base line-clamp-2 leading-snug mb-2 flex-1 group-hover:text-brand-500 transition-colors">
-                            <a href="${p.link}" target="_blank">${p.name}</a>
-                        </h3>
-                        
-                        ${p.notes ? `<p class="text-xs text-slate-500 dark:text-slate-400 mb-3 bg-slate-100 dark:bg-slate-800/50 p-2 rounded-lg line-clamp-2 italic border border-slate-200/50 dark:border-slate-700/50"><i class="ph-fill ph-quotes text-brand-400"></i> ${p.notes}</p>` : ''}
-                        
-                        <div class="flex items-end justify-between mt-auto pt-3 border-t border-slate-200 dark:border-slate-700/50">
-                            <div>
-                                <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1"><i class="ph ph-clock"></i> ${timeAgo(p.createdAt)}</p>
-                                <p class="text-xl font-bold text-slate-900 dark:text-brand-400">₹${formatPrice(p.price)}</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
+// ---------- Add buttons ----------
+$('#add-btn').addEventListener('click', () => openForm());
+$('#fab').addEventListener('click', () => openForm());
+$('#empty-add').addEventListener('click', () => openForm());
+$('#theme-btn').addEventListener('click', cycleTheme);
 
-        // Live Link Preview logic
-        document.getElementById('link').addEventListener('input', (e) => {
-            const url = e.target.value.trim();
-            const w = document.getElementById('website');
-            const icon = document.getElementById('storeIconPreview');
-            
-            if (url) {
-                const siteName = detectWebsite(url);
-                w.value = siteName;
-                icon.innerHTML = getBrandIcon(siteName);
-                icon.classList.remove('hidden-safely');
-            } else {
-                w.value = '';
-                icon.classList.add('hidden-safely');
-            }
-        });
+// ---------- Menu actions ----------
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-action]'); if (!b) return;
+  const details = b.closest('details'); if (details) details.open = false;
+  const map = {
+    'import': () => $('#import-file').click(),
+    'export-json': exportJSON,
+    'export-csv': exportCSV,
+    'firebase': () => { $('#fb-config').value = localStorage.getItem(LS_FB) || ''; openModal('#firebase-modal'); },
+    'shortcuts': () => openModal('#shortcuts-modal'),
+  };
+  map[b.dataset.action]?.();
+});
 
-        // Form Submit
-        document.getElementById('productForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('editId').value;
-            const docData = {
-                name: document.getElementById('name').value.trim(),
-                link: document.getElementById('link').value.trim(),
-                imageUrl: document.getElementById('imageUrl').value.trim(),
-                website: document.getElementById('website').value || 'Web',
-                price: Number(document.getElementById('price').value),
-                priority: document.getElementById('priority').value,
-                notes: document.getElementById('notes').value.trim(),
-                updatedAt: Date.now()
-            };
-            
-            const btn = document.getElementById('submitBtn');
-            const ogHtml = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i> Saving...';
+// ---------- Import / Export ----------
+$('#import-file').addEventListener('change', async e => {
+  const file = e.target.files?.[0]; if (!file) return;
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    const items = Array.isArray(data) ? data : (Array.isArray(data.items) ? data.items : null);
+    if (!items) throw new Error('Invalid JSON');
+    const normalized = items.map(x => ({
+      id: x.id || uid(),
+      name: String(x.name || 'Untitled'),
+      price: Number(x.price) || 0,
+      priority: ['High','Medium','Low'].includes(x.priority) ? x.priority : 'Medium',
+      url: x.url || '', image: x.image || '', notes: x.notes || '',
+      createdAt: Number(x.createdAt) || Date.now(),
+      updatedAt: Date.now(),
+    }));
+    await store.replaceAll(normalized);
+    toast(`Imported ${normalized.length} items`, 'success');
+  } catch (err) { console.error(err); toast('Import failed: ' + err.message, 'error'); }
+  e.target.value = '';
+});
 
-            if (!currentUserId || !db) {
-                // Local Saving Flow
-                if (id) {
-                    const idx = products.findIndex(p => p.id === id);
-                    if(idx > -1) products[idx] = { ...products[idx], ...docData };
-                    showToast("Updated locally", "success");
-                } else {
-                    docData.id = Date.now().toString();
-                    docData.createdAt = Date.now();
-                    products.unshift(docData);
-                    showToast("Added locally!", "success");
-                    fireConfetti();
-                }
-                localStorage.setItem('wishlist_local_items', JSON.stringify(products));
-                renderProducts();
-                resetForm();
-                btn.disabled = false;
-                btn.innerHTML = ogHtml;
-                return;
-            }
+function download(name, content, type) {
+  const blob = new Blob([content], {type});
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: name });
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 500);
+}
+function exportJSON() {
+  download('wishly-' + Date.now() + '.json', JSON.stringify(store.items, null, 2), 'application/json');
+  toast('JSON exported', 'success');
+}
+function exportCSV() {
+  const cols = ['id','name','price','priority','url','image','notes','createdAt','updatedAt'];
+  const esc = v => `"${String(v ?? '').replace(/"/g,'""')}"`;
+  const rows = [cols.join(','), ...store.items.map(it => cols.map(c => esc(it[c])).join(','))];
+  download('wishly-' + Date.now() + '.csv', rows.join('\n'), 'text/csv');
+  toast('CSV exported', 'success');
+}
 
-            try {
-                const ref = collection(db, 'artifacts', appId, 'users', currentUserId, 'wishlist_items');
-                if (id) {
-                    await updateDoc(doc(ref, id), docData);
-                    showToast("Product updated!", "success");
-                } else {
-                    docData.createdAt = Date.now();
-                    await addDoc(ref, docData);
-                    showToast("Added to wishlist!", "success");
-                    fireConfetti();
-                }
-                resetForm();
-            } catch (err) {
-                console.error(err);
-                showToast("Failed to save to cloud", "error");
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = ogHtml;
-            }
-        });
+// ---------- Firebase modal actions ----------
+$('#fb-connect').addEventListener('click', async () => {
+  const raw = $('#fb-config').value.trim();
+  if (!raw) return toast('Paste a Firebase config first', 'error');
+  try {
+    const cfg = JSON.parse(raw);
+    await store.connectFirebase(cfg);
+    closeModal('#firebase-modal');
+  } catch (err) { console.error(err); toast('Firebase failed: ' + err.message, 'error'); }
+});
+$('#fb-disconnect').addEventListener('click', () => {
+  store.disconnectFirebase();
+  closeModal('#firebase-modal');
+  toast('Disconnected from Firebase', 'info');
+});
 
-        // Edit Mode
-        window.editProduct = (id) => {
-            const p = products.find(x => x.id === id);
-            if (!p) return;
-            
-            document.getElementById('editId').value = p.id;
-            document.getElementById('name').value = p.name;
-            document.getElementById('link').value = p.link;
-            document.getElementById('imageUrl').value = p.imageUrl || "";
-            document.getElementById('website').value = p.website;
-            document.getElementById('price').value = p.price;
-            document.getElementById('priority').value = p.priority;
-            document.getElementById('notes').value = p.notes || "";
-            
-            document.getElementById('storeIconPreview').innerHTML = getBrandIcon(p.website);
-            document.getElementById('storeIconPreview').classList.remove('hidden-safely');
+// ---------- Ripple ----------
+document.addEventListener('click', e => {
+  const b = e.target.closest('.ripple'); if (!b) return;
+  const rect = b.getBoundingClientRect();
+  const r = document.createElement('span');
+  const size = Math.max(rect.width, rect.height);
+  r.className = 'r';
+  r.style.width = r.style.height = size + 'px';
+  r.style.left = (e.clientX - rect.left - size/2) + 'px';
+  r.style.top  = (e.clientY - rect.top  - size/2) + 'px';
+  b.appendChild(r); setTimeout(() => r.remove(), 650);
+});
 
-            const title = document.getElementById('formTitle');
-            title.innerHTML = '<i class="ph ph-pencil-simple text-blue-500 text-xl"></i> Edit Product';
-            
-            const btn = document.getElementById('submitBtn');
-            btn.className = "flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-xl transition-all shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 ripple-btn";
-            btn.innerHTML = '<i class="ph ph-arrows-clockwise text-lg"></i> <span>Update</span>';
-            
-            document.getElementById('cancelEditBtn').classList.remove('hidden-safely');
-            document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' });
-        };
+// ---------- Keyboard shortcuts ----------
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { $$('#modal,#confirm,#firebase-modal,#shortcuts-modal').forEach(m => m.classList.add('hidden')); document.body.style.overflow=''; return; }
+  const inField = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName);
+  if (inField) return;
+  if (e.key === '/') { e.preventDefault(); $('#search').focus(); }
+  else if (e.key.toLowerCase() === 'n') { e.preventDefault(); openForm(); }
+  else if (e.key.toLowerCase() === 't') { e.preventDefault(); cycleTheme(); }
+});
 
-        // Reset Form helper
-        document.getElementById('cancelEditBtn').addEventListener('click', resetForm);
-        function resetForm() {
-            document.getElementById('productForm').reset();
-            document.getElementById('editId').value = "";
-            document.getElementById('storeIconPreview').classList.add('hidden-safely');
-            
-            document.getElementById('formTitle').innerHTML = '<i class="ph ph-plus-circle text-brand-500 text-xl"></i> Add Product';
-            const btn = document.getElementById('submitBtn');
-            btn.className = "flex-1 bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3 rounded-xl transition-all shadow-lg shadow-brand-500/25 flex items-center justify-center gap-2 ripple-btn";
-            btn.innerHTML = '<i class="ph ph-check-circle text-lg"></i> <span>Save Product</span>';
-            document.getElementById('cancelEditBtn').classList.add('hidden-safely');
-        }
-
-        // Delete Modal Logic
-        const modal = document.getElementById('deleteModal');
-        window.triggerDelete = (id) => {
-            itemToDelete = id;
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-            modal.children[0].classList.replace('scale-95', 'scale-100');
-        };
-        
-        document.getElementById('cancelDeleteBtn').onclick = () => {
-            itemToDelete = null;
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            modal.children[0].classList.replace('scale-100', 'scale-95');
-        };
-        
-        document.getElementById('confirmDeleteBtn').onclick = async () => {
-            if (!itemToDelete) return;
-            const id = itemToDelete;
-            document.getElementById('cancelDeleteBtn').click(); // close modal
-            
-            if (!currentUserId || !db) {
-                products = products.filter(p => p.id !== id);
-                localStorage.setItem('wishlist_local_items', JSON.stringify(products));
-                renderProducts();
-                showToast("Deleted locally", "success");
-                return;
-            }
-            try {
-                await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUserId, 'wishlist_items', id));
-                showToast("Product deleted from cloud", "success");
-            } catch (e) {
-                showToast("Delete failed", "error");
-            }
-        };
-
-        // Listeners for List
-        document.getElementById('searchInput').addEventListener('input', renderProducts);
-        document.getElementById('sortSelect').addEventListener('change', renderProducts);
-
-        // Import / Export JSON
-        document.getElementById('exportJsonBtn').addEventListener('click', () => {
-            if(!products.length) return showToast("No data to export", "warning");
-            const str = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(products, null, 2));
-            downloadFile(str, `wishlist_premium_${Date.now()}.json`);
-            showToast("JSON Exported", "success");
-        });
-
-        document.getElementById('exportCsvBtn').addEventListener('click', () => {
-            if(!products.length) return showToast("No data to export", "warning");
-            const headers = ['Name', 'Website', 'Price(INR)', 'Priority', 'Link', 'ImageURL', 'Notes', 'Date'];
-            const rows = [headers.join(',')];
-            
-            products.forEach(p => {
-                rows.push([
-                    `"${(p.name||'').replace(/"/g, '""')}"`,
-                    `"${p.website||''}"`, p.price, p.priority,
-                    `"${p.link||''}"`, `"${p.imageUrl||''}"`,
-                    `"${(p.notes||'').replace(/"/g, '""')}"`,
-                    `"${new Date(p.createdAt).toLocaleDateString()}"`
-                ].join(','));
-            });
-            const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
-            downloadFile(URL.createObjectURL(blob), `wishlist_premium_${Date.now()}.csv`);
-            showToast("CSV Exported", "success");
-        });
-
-        function downloadFile(url, name) {
-            const a = document.createElement('a');
-            a.href = url; a.download = name;
-            document.body.appendChild(a); a.click(); a.remove();
-        }
-
-        document.getElementById('importJsonBtn').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async (ev) => {
-                try {
-                    const data = JSON.parse(ev.target.result);
-                    if (!Array.isArray(data)) throw new Error("Invalid format");
-                    
-                    showToast("Importing...", "info");
-                    let count = 0;
-                    
-                    if (!currentUserId || !db) {
-                        data.forEach(item => {
-                            if(item.name && item.link && item.price) {
-                                products.push({...item, id: Date.now()+Math.random().toString(), createdAt: Date.now()});
-                                count++;
-                            }
-                        });
-                        localStorage.setItem('wishlist_local_items', JSON.stringify(products));
-                        renderProducts();
-                        showToast(`Imported ${count} items locally!`, "success");
-                    } else {
-                        const ref = collection(db, 'artifacts', appId, 'users', currentUserId, 'wishlist_items');
-                        for (const item of data) {
-                            if(item.name && item.link && item.price) {
-                                await addDoc(ref, {
-                                    name: item.name, link: item.link, website: item.website || detectWebsite(item.link),
-                                    imageUrl: item.imageUrl || '', price: Number(item.price), priority: item.priority || 'Medium',
-                                    notes: item.notes || '', createdAt: Date.now(), updatedAt: Date.now()
-                                });
-                                count++;
-                            }
-                        }
-                        showToast(`Imported ${count} items!`, "success");
-                    }
-                } catch (err) { showToast("Import Failed", "error"); }
-                e.target.value = '';
-            };
-            reader.readAsText(file);
-        });
-
-        // Animations & Toasts
-        function fireConfetti() {
-            if(typeof confetti === 'function') {
-                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#8b5cf6', '#3b82f6', '#10b981'] });
-            }
-        }
-
-        function showToast(msg, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            const div = document.createElement('div');
-            
-            let bg, icon;
-            switch(type) {
-                case 'success': bg = 'bg-green-500/90'; icon = 'ph-check-circle text-green-100'; break;
-                case 'error': bg = 'bg-red-500/90'; icon = 'ph-warning-circle text-red-100'; break;
-                case 'warning': bg = 'bg-amber-500/90'; icon = 'ph-warning text-amber-100'; break;
-                default: bg = 'bg-brand-600/90'; icon = 'ph-info text-brand-100';
-            }
-
-            div.className = `${bg} backdrop-blur-md text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-sm font-medium w-full animate-slide-up border border-white/10`;
-            div.innerHTML = `<i class="ph-fill ${icon} text-xl"></i> <span class="flex-1">${msg}</span>`;
-            
-            container.appendChild(div);
-            
-            setTimeout(() => {
-                div.style.opacity = '0';
-                div.style.transform = 'translateY(100%)';
-                div.style.transition = 'all 0.3s ease';
-                setTimeout(() => div.remove(), 300);
-            }, 3000);
-        }
-
-    </script>
+// ---------- Boot ----------
+(async () => {
+  skeletonGrid();
+  await store.init();
+  render();
+})();
+</script>
 </body>
 </html>
